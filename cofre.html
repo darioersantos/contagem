@@ -154,6 +154,8 @@
   .sig-print{display:none;width:100%;max-width:360px;height:auto;border:1px solid #cbb9a5;border-radius:8px;}
   .sig-actions{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;}
   .sig-actions button{background:#fff;border:1.5px solid var(--line);color:var(--neg);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .printbtn{width:100%;margin-top:16px;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .printbtn:active{transform:scale(.98);}
 
   .print-head{display:none;}
 
@@ -161,7 +163,7 @@
   @media print{
     @page{margin:8mm;}
     html,body{background:#fff;padding:0;overflow:visible;}
-    header,nav.tabs,.h-actions,.icon-btn,.saved,.sig-actions{display:none !important;}
+    header,nav.tabs,.h-actions,.icon-btn,.saved,.sig-actions,.printbtn,.sig-hint{display:none !important;}
     #sigCanvas{display:none !important;}
     .sig-placeholder{display:none !important;}
     .sig-print{display:block !important;width:auto;max-width:100%;max-height:120px;border:1px solid #cbb9a5;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
@@ -209,7 +211,6 @@
     </div>
     <div class="h-actions">
       <a class="icon-btn" href="index.html" title="Voltar ao Portal" aria-label="Portal" style="font-size:18px;padding:8px 11px;">&#x2302;</a>
-      <button class="icon-btn" id="btnPrint">&#x1F5A8;&#xFE0F; Imprimir</button>
       <button class="icon-btn danger" id="btnClear">&#x1F5D1;&#xFE0F;</button>
     </div>
   </div>
@@ -259,7 +260,7 @@
         <div class="diff ok" id="diff-cofre"><span>&#x2696;&#xFE0F; Diferen&#xE7;a face ao alvo</span><b>0 &#x20AC;</b></div>
 
         <div class="sig-block">
-          <div class="sig-label">&#x270D;&#xFE0F; Assinatura (assine com o dedo)</div>
+          <div class="sig-label">&#x270D;&#xFE0F; Assinatura <span class="sig-hint">(assine com o dedo)</span></div>
           <div class="sig-wrap">
             <canvas id="sigCanvas"></canvas>
             <span class="sig-placeholder" id="sigPlaceholder">Assine aqui</span>
@@ -270,6 +271,7 @@
             <span class="stamp" id="cofre-stamp"></span>
           </div>
         </div>
+        <button class="printbtn" id="btnPrint">&#x1F5A8;&#xFE0F; Imprimir contagem do cofre</button>
       </div>
     </details>
 
