@@ -1,3 +1,4 @@
-/* Endere√ßo da nuvem (Google Apps Script). Deixar vazio = guarda s√≥ neste dispositivo.
-   Depois de publicares o Apps Script, cola aqui o link /exec entre as aspas. */
-window.BACKEND_URL = "";
+/* Endereco da nuvem (Google Apps Script).
+   Dados partilhados entre telemovel e computador.
+   Para desligar a sincronizacao, deixar as aspas vazias. */
+window.BACKEND_URL = "https://script.google.com/macros/s/AKfycbxm-LysHJVpsbeVCNqI29WDHXIcFEwdYvhXn84LR6ASwoSuMDqh_PWJEI7danvz8lEr/exec";
