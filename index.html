@@ -24,7 +24,7 @@
     --radius:16px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0;overscroll-behavior:none;}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:var(--bg);color:var(--ink);
@@ -129,8 +129,10 @@
   /* caixas cards */
   .caixa-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   @media(max-width:560px){.caixa-grid{grid-template-columns:1fr;}}
-  .caixa{border:1px solid var(--line);border-radius:13px;padding:13px;background:#fdfbf8;}
-  .caixa h3{margin:0 0 10px;font-size:15px;color:var(--accent-dark);}
+  .caixa{border:1px solid var(--line);border-radius:13px;padding:13px;background:#fdfbf8;overflow:hidden;}
+  .caixa h3{margin:-13px -13px 13px;padding:11px 14px;font-size:17px;font-weight:800;color:#fff;background:linear-gradient(135deg,#FF8100,#E66200);letter-spacing:.01em;}
+  .caixa .ret-rem{color:var(--neg);font-weight:800;cursor:pointer;margin-left:5px;font-size:12px;}
+  .caixa .addret{margin:2px 0 11px;background:#fff;border:1.5px dashed var(--line);color:var(--accent-dark);border-radius:9px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
   .caixa .crow{display:grid;grid-template-columns:1fr 110px;align-items:center;gap:8px;margin-bottom:7px;}
   .caixa .crow label{font-size:13px;color:var(--muted);font-weight:600;}
   .caixa .crow.audit label{color:var(--warn);font-weight:700;}
@@ -145,8 +147,8 @@
   /* ---------- Assinatura digital ---------- */
   .sig-block{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px;}
   .sig-label{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px;}
-  .sig-wrap{position:relative;border:1.5px solid var(--line);border-radius:12px;background:#fffdfa;height:170px;overflow:hidden;}
-  #sigCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;}
+  .sig-wrap{position:relative;border:1.5px solid var(--line);border-radius:12px;background:#fffdfa;height:170px;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+  #sigCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;-webkit-user-select:none;user-select:none;}
   .sig-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#c9bfb1;font-size:15px;pointer-events:none;}
   .sig-print{display:none;width:100%;max-width:360px;height:auto;border:1px solid #cbb9a5;border-radius:8px;}
   .sig-actions{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;}
@@ -158,22 +160,23 @@
   @media print{
     @page{margin:12mm;}
     body{background:#fff;padding:0;}
-    header,nav.tabs,.h-actions,.icon-btn,.addbtn,.removebtn,.saved,.sig-actions{display:none !important;}
+    header,nav.tabs,.h-actions,.icon-btn,.saved,.sig-actions{display:none !important;}
     #sigCanvas{display:none !important;}
     .sig-wrap{border:none;height:auto;}
     .sig-placeholder{display:none !important;}
     .sig-print{display:block !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .print-head{display:block;text-align:center;margin-bottom:10px;}
+    .print-head{display:block;text-align:center;margin-bottom:14px;}
     .print-head h1{font-size:18px;margin:0;}
     .print-head p{font-size:12px;margin:2px 0;color:#444;}
     main{max-width:100%;padding:0;}
-    .tabview{display:block !important;}
-    .tabview:not(.print-on){display:none !important;}
-    details.card{box-shadow:none;border:1px solid #d8cdbf;break-inside:avoid;margin:8px 0;}
-    .card-body{display:block !important;}
-    summary .chev{display:none;}
+    .tabview{display:none !important;}
+    #view-contagem{display:block !important;}
+    #view-contagem > details{display:none !important;}
+    #view-contagem > details#card-cofre{display:block !important;box-shadow:none;border:1px solid #d8cdbf;}
+    #card-cofre .card-body{display:block !important;}
+    #card-cofre summary .chev,#card-cofre summary .badge{display:none !important;}
     input{border:1px solid #d8cdbf !important;background:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .grandtotal,.diff,.subtotal,.till-foot .box,.caixa{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .grandtotal,.diff,.subtotal{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
 </style>
 </head>
@@ -211,7 +214,7 @@
   <!-- ===================== CONTAGEM ===================== -->
   <div class="tabview active" id="view-contagem">
 
-    <details class="card" open>
+    <details class="card" id="card-cofre">
       <summary>&#x1F512; Contagem de Cofre <span class="badge" id="badge-cofre">0 &#x20AC;</span><span class="chev">&#x25BC;</span></summary>
       <div class="card-body">
         <div class="sub">Notas</div>
@@ -275,18 +278,6 @@
     </details>
 
     <details class="card">
-      <summary>&#x1F4B3; Caixas a fechar (Tills) <span class="badge" id="badge-tills">0 &#x20AC;</span><span class="chev">&#x25BC;</span></summary>
-      <div class="card-body">
-        <div class="field">
-          <label for="floatTill">Fundo a deixar em cada caixa (&#x20AC;):</label>
-          <input type="number" id="floatTill" inputmode="decimal" step="10" style="width:100px;text-align:center;">
-        </div>
-        <div id="tills-container"></div>
-        <button class="addbtn" id="btnAddTill">&#xFF0B; Adicionar caixa</button>
-      </div>
-    </details>
-
-    <details class="card">
       <summary>&#x1F4CA; Resumo semanal (To Bank) <span class="badge" id="badge-resumo">0 &#x20AC;</span><span class="chev">&#x25BC;</span></summary>
       <div class="card-body">
         <p class="hint">Valores enviados ao banco em cada dia. (N&#xE3;o preencher na HI Retail App.)</p>
@@ -299,14 +290,12 @@
 
   <!-- ===================== CAIXAS ===================== -->
   <div class="tabview" id="view-caixas">
-    <details class="card" open>
-      <summary>&#x1F4B5; Retiradas das Caixas <span class="badge" id="badge-caixas">0 &#x20AC;</span><span class="chev">&#x25BC;</span></summary>
-      <div class="card-body">
-        <p class="hint">Preenche as retiradas e o Till Audit (com moedas) de cada caixa.</p>
-        <div class="caixa-grid" id="caixas-container"></div>
-        <div class="grandtotal"><span>&#x1F3E6; TOTAL GERAL</span><b id="total-caixas">0 &#x20AC;</b></div>
-      </div>
-    </details>
+    <div class="card" style="padding:16px;">
+      <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;">&#x1F4B5; Retiradas das Caixas <span class="badge" id="badge-caixas" style="margin-left:auto;">0 &#x20AC;</span></div>
+      <p class="hint">Preenche as retiradas e o Till Audit (com moedas) de cada caixa.</p>
+      <div class="caixa-grid" id="caixas-container"></div>
+      <div class="grandtotal"><span>&#x1F3E6; TOTAL GERAL</span><b id="total-caixas">0 &#x20AC;</b></div>
+    </div>
   </div>
 </main>
 
@@ -324,7 +313,6 @@ const SAQUETAS = SAQ_DEF.map(([d,v])=>({key:String(d), label:euro(d), sub:'rolo 
 const DIAS = ['Quinta','Sexta','S\u00E1bado','Domingo','Segunda','Ter\u00E7a','Quarta','Outro'];
 const RETIRADAS = ['Retirada 1','Retirada 2','Retirada 3','Retirada 4','Retirada 5'];
 const N_CAIXAS = 6;
-const FUNDO_CAIXA = 250;
 
 /* ---------- Estado ---------- */
 const STORE_KEY = 'contagem_vg_v1';
@@ -336,13 +324,10 @@ function defaultState(){
     data: today(),
     cofre:{notas:{}, mangas:{}, saquetas:{}, moedas:{}, meta:2500, fundos:0, assinatura:'', sigStamp:''},
     banco:{notas:{}, moedas:{}},
-    floatTill:FUNDO_CAIXA,
-    tills:[ till('Caixa 2'), till('Caixa 3'), till('Caixa 4') ],
     resumo:{},
-    caixas: Array.from({length:N_CAIXAS},(_,i)=>({nome:'Caixa '+(i+1), retiradas:['','','','',''], audit:''}))
+    caixas: Array.from({length:N_CAIXAS},(_,i)=>({nome:'Caixa '+(i+1), retiradas:[''], audit:''}))
   };
 }
-function till(nome){ return {nome, bills:{}, coins:{}}; }
 function loadLocal(){
   try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)); if(s&&s.cofre) return Object.assign(defaultState(),s); }catch(e){}
   return defaultState();
@@ -351,8 +336,10 @@ function saveLocal(){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(state))
 
 /* ---------- Sincroniza\u00E7\u00E3o (nuvem) ---------- */
 let saveTimer;
+let loading=true;   // durante o arranque/leitura nao escreve na nuvem
 function save(){
   saveLocal();
+  if(loading) return;
   if(BACKEND){
     setStatus('sync','A guardar\u2026');
     clearTimeout(saveTimer);
@@ -369,16 +356,17 @@ function pushCloud(){
     .catch(e=>{ setStatus('off','Sem liga\u00E7\u00E3o \u2014 guardado no dispositivo'); });
 }
 function pullCloud(){
-  if(!BACKEND){ setStatus('ok','Guardado neste dispositivo'); return; }
+  if(!BACKEND){ loading=false; setStatus('ok','Guardado neste dispositivo'); return; }
   setStatus('sync','A ligar\u2026');
   fetch(BACKEND+'?action=get&t='+Date.now())
     .then(r=>r.json()).then(j=>{
       if(j&&j.ok&&j.data){
         try{ const remote=JSON.parse(j.data); if(remote&&remote.cofre){ state=Object.assign(defaultState(),remote); saveLocal(); initAll(true); } }catch(e){}
       }
+      loading=false;
       setStatus('ok','Guardado na nuvem');
     })
-    .catch(e=>{ setStatus('off','Sem liga\u00E7\u00E3o \u2014 a usar dados do dispositivo'); });
+    .catch(e=>{ loading=false; setStatus('off','Sem liga\u00E7\u00E3o \u2014 a usar dados do dispositivo'); });
 }
 function setStatus(kind,txt){
   const el=document.getElementById('saveStatus'); if(!el) return;
@@ -405,18 +393,6 @@ function buildDenomGroup(containerId, defs, store, onChange){
       tot.textContent=euro(q*def.valueEach); tot.classList.toggle('has',q>0); onChange(); };
     input.addEventListener('input',recalc); recalc();
     c.appendChild(row);
-  });
-}
-function buildInline(box,defs,store,onChange){
-  box.innerHTML='';
-  defs.forEach(def=>{
-    const row=el(`<div class="drow" style="grid-template-columns:1fr 70px 84px;"><div class="lbl">${def.label}</div><input type="number" inputmode="numeric" min="0" step="1" placeholder="0"><div class="tot">0 \u20AC</div></div>`);
-    const input=row.querySelector('input'), tot=row.querySelector('.tot');
-    if(store[def.key]) input.value=store[def.key];
-    const rc=()=>{const q=num(input.value); if(q)store[def.key]=q; else delete store[def.key];
-      tot.textContent=euro(q*def.valueEach); tot.classList.toggle('has',q>0); onChange();};
-    input.addEventListener('input',rc); rc();
-    box.appendChild(row);
   });
 }
 function sumGroup(defs,store){ return defs.reduce((s,d)=>s+num(store[d.key])*d.valueEach,0); }
@@ -477,7 +453,7 @@ function initSignature(){
     set('cofre-stamp', state.cofre.sigStamp?('Assinado: '+state.cofre.sigStamp):'');
   }
   function pos(e){ const r=cv.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
-  function start(e){ e.preventDefault(); drawing=true; last=pos(e); ph.style.display='none'; }
+  function start(e){ e.preventDefault(); if(window.getSelection){var sel=window.getSelection(); if(sel&&sel.removeAllRanges) sel.removeAllRanges();} drawing=true; last=pos(e); ph.style.display='none'; }
   function move(e){ if(!drawing)return; e.preventDefault(); const p=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; hasInk=true; }
   function end(){ if(!drawing)return; drawing=false; if(hasInk){ commit(); hasInk=false; } }
   function commit(){
@@ -514,42 +490,6 @@ function calcBanco(){
   save();
 }
 
-/* ---------- TILLS ---------- */
-function renderTills(){
-  const f=document.getElementById('floatTill'); f.value=state.floatTill;
-  f.oninput=()=>{state.floatTill=num(f.value);calcTills();save();};
-  const c=document.getElementById('tills-container'); c.innerHTML='';
-  state.tills.forEach((t,idx)=>{
-    const card=el(`<div style="border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:12px;background:#fdfbf8;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <input class="till-name" type="text" value="${escapeHtml(t.nome)}" style="font-weight:800;font-size:15px;color:var(--accent-dark);border:none;background:none;flex:1;font-family:inherit;">
-        ${state.tills.length>1?`<button class="removebtn" data-i="${idx}">\u2715 Remover</button>`:''}
-      </div>
-      <div class="till-grid"><div><div class="sub">Notas</div><div class="t-bills"></div></div><div><div class="sub">Moedas</div><div class="t-coins"></div></div></div>
-      <div class="till-foot"><div class="box"><span>Total contado</span><b class="t-total">0 \u20AC</b></div><div class="box bank"><span>A enviar ao banco</span><b class="t-bank">0 \u20AC</b></div></div>
-    </div>`);
-    buildInline(card.querySelector('.t-bills'),NOTAS,t.bills,calcTills);
-    buildInline(card.querySelector('.t-coins'),MOEDAS,t.coins,calcTills);
-    card.querySelector('.till-name').addEventListener('input',e=>{t.nome=e.target.value;save();});
-    const rb=card.querySelector('.removebtn');
-    if(rb) rb.addEventListener('click',()=>{ if(confirm('Remover '+t.nome+'?')){ state.tills.splice(idx,1); renderTills(); save(); } });
-    c.appendChild(card);
-  });
-  calcTills();
-}
-function calcTills(){
-  let grand=0;
-  document.querySelectorAll('#tills-container > div').forEach((card,idx)=>{
-    const t=state.tills[idx]; if(!t) return;
-    const total=sumGroup(NOTAS,t.bills)+sumGroup(MOEDAS,t.coins);
-    const bank=total-(state.floatTill||0);
-    card.querySelector('.t-total').textContent=euro(total);
-    card.querySelector('.t-bank').textContent=euro(bank);
-    grand+=Math.max(bank,0);
-  });
-  set('badge-tills',euro(grand)); save();
-}
-
 /* ---------- RESUMO ---------- */
 function renderResumo(){
   const c=document.getElementById('resumo-dias'); c.innerHTML='';
@@ -571,14 +511,20 @@ function calcResumo(){
 function renderCaixas(){
   const c=document.getElementById('caixas-container'); c.innerHTML='';
   state.caixas.forEach((cx,ci)=>{
+    if(!Array.isArray(cx.retiradas)||!cx.retiradas.length) cx.retiradas=[''];
     const card=el(`<div class="caixa"><h3>${escapeHtml(cx.nome)}</h3></div>`);
-    RETIRADAS.forEach((label,ri)=>{
-      const row=el(`<div class="crow"><label>${label}</label><input type="number" inputmode="decimal" step="0.01" placeholder="0,00"></div>`);
+    cx.retiradas.forEach((val,ri)=>{
+      const row=el(`<div class="crow"><label>Retirada ${ri+1}${ri>0?' <span class="ret-rem">\u2715</span>':''}</label><input type="number" inputmode="decimal" step="0.01" placeholder="0,00"></div>`);
       const input=row.querySelector('input');
-      if(cx.retiradas[ri]) input.value=cx.retiradas[ri];
+      if(val) input.value=val;
       input.addEventListener('input',()=>{cx.retiradas[ri]=input.value;calcCaixas();save();});
+      const rem=row.querySelector('.ret-rem');
+      if(rem) rem.addEventListener('click',()=>{ cx.retiradas.splice(ri,1); renderCaixas(); save(); });
       card.appendChild(row);
     });
+    const add=el(`<button class="addret">\uFF0B Retirada</button>`);
+    add.addEventListener('click',()=>{ cx.retiradas.push(''); renderCaixas(); save(); });
+    card.appendChild(add);
     const arow=el(`<div class="crow audit"><label>Till Audit (c/ moedas)</label><input type="number" inputmode="decimal" step="0.01" placeholder="0,00"></div>`);
     const ai=arow.querySelector('input');
     if(cx.audit) ai.value=cx.audit;
@@ -611,15 +557,12 @@ const dataInput=document.getElementById('dataInput');
 dataInput.addEventListener('change',()=>{state.data=dataInput.value;save();});
 
 document.getElementById('btnPrint').addEventListener('click',()=>{
-  const activeTab=document.querySelector('.tabview.active').id.replace('view-','');
   const d=new Date(state.data+'T00:00:00');
   document.getElementById('printHead').innerHTML=
-    `<h1>Contagem de Caixa \u2014 Sport Zone Vasco da Gama</h1><p>${activeTab==='caixas'?'Retiradas das Caixas':'Contagem / Cofre / Banco'} \u00B7 Data: ${isNaN(d)?state.data:d.toLocaleDateString('pt-PT')}</p>`;
-  document.querySelectorAll('.tabview').forEach(v=>v.classList.remove('print-on'));
-  document.querySelector('.tabview.active').classList.add('print-on');
-  const opened=[];
-  document.querySelectorAll('.tabview.active details').forEach(dt=>{ if(!dt.open){dt.open=true;opened.push(dt);} });
-  setTimeout(()=>{ window.print(); setTimeout(()=>opened.forEach(dt=>dt.open=false),500); },100);
+    `<h1>Contagem de Cofre \u2014 Sport Zone Vasco da Gama</h1><p>Data: ${isNaN(d)?state.data:d.toLocaleDateString('pt-PT')}</p>`;
+  const cofre=document.getElementById('card-cofre');
+  const wasOpen=cofre.open; cofre.open=true;
+  setTimeout(()=>{ window.print(); setTimeout(()=>{ if(!wasOpen) cofre.open=false; },500); },120);
 });
 
 document.getElementById('btnClear').addEventListener('click',()=>{
@@ -632,12 +575,8 @@ document.getElementById('btnClear').addEventListener('click',()=>{
 /* ---------- Init ---------- */
 function initAll(keepTab){
   dataInput.value=state.data||today();
-  renderCofre(); renderBanco(); renderTills(); renderResumo(); renderCaixas();
+  renderCofre(); renderBanco(); renderResumo(); renderCaixas();
 }
-document.getElementById('btnAddTill').addEventListener('click',()=>{
-  state.tills.push(till('Caixa '+(state.tills.length+2)));
-  renderTills(); save();
-});
 initAll();
 pullCloud();
 </script>
