@@ -13,7 +13,7 @@
     --shadow:0 1px 2px rgba(26,19,3,.06),0 4px 16px rgba(26,19,3,.07);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;overscroll-behavior:none;overflow-x:hidden;width:100%;max-width:100%;touch-action:pan-y;}
+  html,body{margin:0;padding:0;overscroll-behavior:none;touch-action:pan-y;}body{overflow-x:clip;}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;padding-bottom:40px;-webkit-text-size-adjust:100%;}
 
   /* Header */
@@ -85,7 +85,8 @@
 const SECTIONS = [
   { t:'Aplica\u00E7\u00F5es', app:true, items:[
     {k:'superliga', ic:'\u{1F3C6}', nm:'Super Liga'},
-    {k:'contagem',  ic:'\u{1F4B6}', nm:'Contagem de Dinheiro'}
+    {k:'contagem',  ic:'\u{1F4B6}', nm:'Contagem de Dinheiro'},
+    {k:'lembretes', ic:'\u{1F4CC}', nm:'Lembretes'}
   ]},
   { t:'Templates', items:[
     {k:'sinaletica',      ic:'\u{1FAA7}', nm:'Sinal\u00E9tica'},
@@ -98,6 +99,7 @@ const SECTIONS = [
     {k:'folha_elogio',    ic:'\u{1F31F}', nm:'Folha de Elogio'}
   ]},
   { t:'Formul\u00E1rios', items:[
+    {k:'limpeza',           ic:'\u{1F9F9}', nm:'Limpeza'},
     {k:'admissao',          ic:'\u{1F4DD}', nm:'Pedido de Admiss\u00E3o'},
     {k:'avaliacoes',        ic:'\u2B50', nm:'Avalia\u00E7\u00F5es'},
     {k:'atendimento_loja',  ic:'\u{1F6CD}\uFE0F', nm:'Atendimento Loja'},
