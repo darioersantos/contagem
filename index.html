@@ -183,7 +183,7 @@ function updateNotifLembretes(){
   var B=(window.BACKEND_URL?String(window.BACKEND_URL).trim():''); if(!B) return;
   fetch(B+'?action=notas&t='+Date.now()).then(function(r){return r.json();}).then(function(j){
     if(!j||!j.ok||!Array.isArray(j.notas)) return;
-    var n=j.notas.filter(function(x){return String(x.seccao)!=='_aniversario' && !(x.done===true||String(x.done).toLowerCase()==='true');}).length;
+    var n=j.notas.filter(function(x){return String(x.seccao)!=='_aniversario' && String(x.seccao)!=='_comentario' && !(x.done===true||String(x.done).toLowerCase()==='true');}).length;
     var tile=document.querySelector('.tile[data-key="lembretes"]');
     if(tile && n>0){ var b=document.createElement('span'); b.className='tile-badge'; b.textContent=n>99?'99+':n; tile.appendChild(b); }
   }).catch(function(){});
@@ -194,7 +194,7 @@ updateNotifLembretes();
 /* PIN gate */
 (function(){
   var pin=document.getElementById('pin');
-  if(localStorage.getItem('portalOK')==='1'){ if(pin&&pin.parentNode) pin.parentNode.removeChild(pin); return; }
+  if(sessionStorage.getItem('portalOK')==='1'){ if(pin&&pin.parentNode) pin.parentNode.removeChild(pin); return; }
   var hdr=document.querySelector('.logo img'); if(hdr) document.getElementById('pinLogo').src=hdr.src;
   var dotsEl=document.getElementById('pinDots');
   for(var i=0;i<4;i++) dotsEl.appendChild(document.createElement('span'));
@@ -204,7 +204,7 @@ updateNotifLembretes();
     if(val.length>=4) return;
     val+=d; upd();
     if(val.length===4){
-      if(val===CODE){ localStorage.setItem('portalOK','1'); pin.classList.add('hide'); setTimeout(function(){ if(pin.parentNode) pin.parentNode.removeChild(pin); },420); }
+      if(val===CODE){ sessionStorage.setItem('portalOK','1'); pin.classList.add('hide'); setTimeout(function(){ if(pin.parentNode) pin.parentNode.removeChild(pin); },420); }
       else { document.getElementById('pinErr').textContent='C\u00F3digo errado'; pin.classList.add('shake'); setTimeout(function(){ pin.classList.remove('shake'); val=''; upd(); },420); }
     }
   }
