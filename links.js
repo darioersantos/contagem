@@ -29,7 +29,7 @@ window.PORTAL_LINKS = {
   avaliacoes:        "",
   atendimento_loja:  "",
   atendimento_caixa: "",
-  aniversario:       "",
+  aniversario:       "aniversario.html",
   limitacoes_horario:"",
   satisfacao_staff:  "",
   ferias:            "",
