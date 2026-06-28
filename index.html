@@ -45,7 +45,8 @@
   .tile .soon-tag{position:absolute;top:7px;right:7px;background:#efe9e0;color:#9a8f7d;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;}
   .tile.app{background:linear-gradient(135deg,#FF8100,#E66200);color:#fff;border:none;box-shadow:0 4px 16px rgba(230,98,0,.3);}
   .tile.app .nm{color:#fff;}
-  .tile-badge{position:absolute;top:-7px;right:-7px;min-width:24px;height:24px;padding:0 6px;background:#e11d2b;color:#fff;border-radius:999px;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff;}
+  .tile-badge{position:absolute;top:-7px;right:-7px;min-width:24px;height:24px;padding:0 6px;background:#e11d2b;color:#fff;border-radius:999px;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff;animation:tilesalta 1.4s ease-in-out infinite;transform-origin:center;}
+  @keyframes tilesalta{0%,60%,100%{transform:translateY(0);}15%{transform:translateY(-7px);}30%{transform:translateY(0);}45%{transform:translateY(-3px);}}
 
   footer{text-align:center;color:var(--muted);font-size:11px;margin-top:24px;}
 
