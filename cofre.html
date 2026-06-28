@@ -244,14 +244,13 @@
   <!-- ===================== CONTAGEM ===================== -->
   <div class="tabview active" id="view-contagem">
 
-    <div class="periodo-seg" id="periodoSeg">
-      <button type="button" data-p="manha" class="active">&#x1F305; Manh&#xE3;</button>
-      <button type="button" data-p="noite">&#x1F319; Noite</button>
-    </div>
-
     <details class="card" id="card-cofre">
       <summary>&#x1F512; Contagem de Cofre <span class="badge" id="badge-cofre">0 &#x20AC;</span><span class="chev">&#x25BC;</span></summary>
       <div class="card-body">
+        <div class="periodo-seg" id="periodoSeg">
+          <button type="button" data-p="manha" class="active">&#x1F305; Manh&#xE3;</button>
+          <button type="button" data-p="noite">&#x1F319; Noite</button>
+        </div>
         <div class="sub">Notas</div>
         <div id="cofre-notas"></div>
         <div class="subtotal">Subtotal notas <b id="st-cofre-notas">0 &#x20AC;</b></div>
@@ -406,7 +405,7 @@ function setStatus(kind,txt){
 
 /* ---------- Helpers ---------- */
 function euro(n){ return (Number(n)||0).toLocaleString('pt-PT',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}); }
-function today(){ return new Date().toISOString().slice(0,10); }
+function today(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
 function num(v){ const n=parseFloat(String(v).replace(',','.')); return isNaN(n)?0:n; }
 function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
 function set(id,txt){ const e=document.getElementById(id); if(e) e.textContent=txt; }
@@ -611,11 +610,21 @@ document.getElementById('btnClear').addEventListener('click',()=>{
 
 /* ---------- Init ---------- */
 function migrate(){
-  // contagem antiga (um so cofre) passa a ser a contagem da MANHA
-  if(state.cofre && !state.cofreManha){ state.cofreManha=state.cofre; }
+  // contagem antiga (um so cofre) passa a ser a contagem da MANHA (formato antigo so tem 'cofre')
+  if(state.cofre){ state.cofreManha=state.cofre; }
   if(!state.cofreManha) state.cofreManha=freshCofre();
   if(!state.cofreNoite) state.cofreNoite=freshCofre();
   if(state.periodo!=='manha' && state.periodo!=='noite') state.periodo='manha';
+  // NOVO DIA: assume o dia real e poe TUDO a zero (cofre manha+noite, banco e caixas)
+  var hoje=today();
+  if(state.data!==hoje){
+    state.cofreManha=freshCofre();
+    state.cofreNoite=freshCofre();
+    state.banco={notas:{}, moedas:{}};
+    state.caixas=Array.from({length:N_CAIXAS},(_,i)=>({nome:'Caixa '+(i+1), retiradas:[''], audit:''}));
+    state.periodo='manha';
+    state.data=hoje;
+  }
   delete state.cofre;
   linkCofre();
   if(Array.isArray(state.caixas)) state.caixas.forEach(cx=>{
