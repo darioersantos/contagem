@@ -198,11 +198,11 @@
     #card-cofre .drow .tot{font-size:11px;}
     #card-cofre .subtotal{padding:5px 10px;font-size:11.5px;margin-top:5px;break-inside:avoid;}
     #card-cofre .subtotal b{font-size:13px;}
-    .grandtotal,.diff,.sig-block,#card-cofre .field{column-span:all;break-inside:avoid;}
+    .grandtotal,.sig-block{column-span:all;break-inside:avoid;}
     .grandtotal{padding:9px 13px;margin-top:9px;}
     .grandtotal b{font-size:17px;}
-    .diff{padding:7px 13px;margin-top:6px;font-size:13px;}
-    #card-cofre .field{margin:8px 0;}
+    /* nao imprimir o "Cofre alvo" nem a "Diferenca face ao alvo" */
+    .diff,#card-cofre .field{display:none !important;}
     .sig-block{margin-top:13px;padding-top:9px;}
     .sig-wrap{border:none;height:auto;}
     input{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
