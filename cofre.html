@@ -164,37 +164,37 @@
 
   /* ---------- Print ---------- */
   @media print{
-    @page{margin:8mm;}
+    @page{margin:14mm 13mm;}
     html,body{background:#fff;padding:0;overflow:visible;}
     header,nav.tabs,.h-actions,.icon-btn,.saved,.sig-actions,.printbtn,.sig-hint,.phide{display:none !important;}
     #sigCanvas{display:none !important;}
     .sig-placeholder{display:none !important;}
-    .sig-print{display:block !important;width:auto;max-width:100%;max-height:120px;border:1px solid #cbb9a5;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .print-head{display:block;text-align:center;margin-bottom:8px;}
-    .print-head h1{font-size:16px;margin:0;}
-    .print-head p{font-size:11px;margin:2px 0;color:#444;}
+    .sig-print{display:block !important;width:auto;max-width:100%;max-height:210px;border:1px solid #cbb9a5;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .print-head{display:block;text-align:center;margin-bottom:18px;}
+    .print-head h1{font-size:21px;margin:0;}
+    .print-head p{font-size:13px;margin:3px 0;color:#444;}
     main{max-width:100%;padding:0;}
     .tabview{display:none !important;}
     #view-contagem{display:block !important;}
     #view-contagem > details{display:none !important;}
     #view-contagem > details#card-cofre{display:block !important;box-shadow:none;border:none;}
     #card-cofre summary{display:none !important;}
-    /* formulario do cofre numa unica folha: 2 colunas + compacto */
-    #card-cofre .card-body{display:block !important;padding:0;column-count:2;column-gap:16px;}
-    #card-cofre .sub{font-size:10px;margin:5px 0 2px;break-after:avoid;color:#555;}
-    #card-cofre .drow{padding:1px 0;break-inside:avoid;grid-template-columns:1fr 44px 58px;gap:5px;border-bottom:1px solid #f0eadf;}
-    #card-cofre .drow .lbl{font-size:10.5px;}
-    #card-cofre .drow .lbl small{font-size:8.5px;}
-    #card-cofre .drow input{font-size:10.5px;padding:1px 2px;border:1px solid #cbb9a5 !important;}
-    #card-cofre .drow .tot{font-size:10px;}
-    #card-cofre .subtotal{padding:3px 8px;font-size:10.5px;margin-top:3px;break-inside:avoid;}
-    #card-cofre .subtotal b{font-size:11px;}
+    /* formulario do cofre numa unica folha A4: 2 colunas, bem distribuido */
+    #card-cofre .card-body{display:block !important;padding:0;column-count:2;column-gap:26px;}
+    #card-cofre .sub{font-size:13px;margin:14px 0 5px;break-after:avoid;color:#555;font-weight:700;}
+    #card-cofre .drow{padding:6px 0;break-inside:avoid;grid-template-columns:1fr 56px 74px;gap:8px;border-bottom:1px solid #ece4d6;}
+    #card-cofre .drow .lbl{font-size:13px;}
+    #card-cofre .drow .lbl small{font-size:10.5px;}
+    #card-cofre .drow input{font-size:13px;padding:4px 4px;border:1px solid #cbb9a5 !important;}
+    #card-cofre .drow .tot{font-size:12.5px;}
+    #card-cofre .subtotal{padding:7px 12px;font-size:13px;margin-top:8px;break-inside:avoid;}
+    #card-cofre .subtotal b{font-size:14.5px;}
     .grandtotal,.diff,.sig-block,#card-cofre .field{column-span:all;break-inside:avoid;}
-    .grandtotal{padding:8px 12px;margin-top:8px;}
-    .grandtotal b{font-size:16px;}
-    .diff{padding:6px 12px;margin-top:6px;font-size:12px;}
-    #card-cofre .field{margin:6px 0;}
-    .sig-block{margin-top:10px;padding-top:8px;}
+    .grandtotal{padding:14px 16px;margin-top:18px;}
+    .grandtotal b{font-size:22px;}
+    .diff{padding:11px 16px;margin-top:10px;font-size:15px;}
+    #card-cofre .field{margin:14px 0;}
+    .sig-block{margin-top:24px;padding-top:14px;}
     .sig-wrap{border:none;height:auto;}
     input{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     .grandtotal,.diff,.subtotal{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
