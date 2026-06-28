@@ -10,6 +10,7 @@ window.PORTAL_LINKS = {
   /* ---- Aplicacoes ---- */
   superliga: "http://manager9yc.github.io/superliga/",
   contagem:  "cofre.html",
+  lembretes: "lembretes.html",
 
   /* ---- Templates ---- */
   sinaletica:        "",
@@ -22,7 +23,8 @@ window.PORTAL_LINKS = {
   folha_elogio:      "",
 
   /* ---- Formularios ---- */
-  admissao:          "",
+  limpeza:           "limpeza.html",
+  admissao:          "https://forms.gle/ooh9dxriXekfDVUU8",
   avaliacoes:        "",
   atendimento_loja:  "",
   atendimento_caixa: "",
