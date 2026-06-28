@@ -24,6 +24,7 @@ window.PORTAL_LINKS = {
   folha_elogio:      "",
 
   /* ---- Formularios ---- */
+  happyhour:         "happyhour.html",
   limpeza:           "limpeza.html",
   admissao:          "https://forms.gle/ooh9dxriXekfDVUU8",
   avaliacoes:        "",
