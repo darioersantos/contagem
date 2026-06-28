@@ -94,10 +94,17 @@ let DADOS=[];
 
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function d2(n){return ('0'+n).slice(-2);}
-function fmt(iso){ var d=new Date(iso+'T00:00:00'); return d2(d.getDate())+'/'+d2(d.getMonth()+1)+'/'+d.getFullYear(); }
-function idade(iso){ var d=new Date(iso+'T00:00:00'),n=new Date(); var a=n.getFullYear()-d.getFullYear(); if(n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate())) a--; return a; }
-function ehHoje(iso){ var d=new Date(iso+'T00:00:00'),n=new Date(); return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth(); }
-function md(iso){ var d=new Date(iso+'T00:00:00'); return d.getMonth()*100+d.getDate(); }
+function parts(s){
+  s=String(s||''); if(s.charAt(0)==='@') s=s.slice(1);
+  var m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return {y:+m[1], mo:+m[2]-1, d:+m[3]};
+  var dt=new Date(s); if(!isNaN(dt.getTime())) return {y:dt.getFullYear(), mo:dt.getMonth(), d:dt.getDate()};
+  return null;
+}
+function fmt(s){ var p=parts(s); if(!p) return '\u2014'; return d2(p.d)+'/'+d2(p.mo+1)+'/'+p.y; }
+function idade(s){ var p=parts(s); if(!p) return ''; var n=new Date(); var a=n.getFullYear()-p.y; if(n.getMonth()<p.mo||(n.getMonth()===p.mo&&n.getDate()<p.d)) a--; return a; }
+function ehHoje(s){ var p=parts(s); if(!p) return false; var n=new Date(); return p.d===n.getDate()&&p.mo===n.getMonth(); }
+function md(s){ var p=parts(s); if(!p) return 9999; return p.mo*100+p.d; }
 
 function render(){
   const l=document.getElementById('lista'); l.innerHTML='';
@@ -105,7 +112,7 @@ function render(){
   const lista=DADOS.slice().sort((a,b)=>md(a.texto)-md(b.texto));
   let mesAtual=-1;
   lista.forEach(function(n){
-    const d=new Date(n.texto+'T00:00:00'); const mes=d.getMonth();
+    const p=parts(n.texto); const mes=p?p.mo:0;
     if(mes!==mesAtual){ mesAtual=mes; const h=document.createElement('div'); h.className='mes'; h.textContent=MESES[mes]; l.appendChild(h); }
     const hoje=ehHoje(n.texto);
     const row=document.createElement('div'); row.className='aniv'+(hoje?' hoje':'');
@@ -136,7 +143,7 @@ document.getElementById('btnSave').addEventListener('click',function(){
   if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return; }
   const btn=this; btn.disabled=true; btn.textContent='A guardar\u2026';
   fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'nota_add', seccao:ANIV, autor:nome+' '+apelido, texto:nasc})})
+    body:JSON.stringify({action:'nota_add', seccao:ANIV, autor:nome+' '+apelido, texto:'@'+nasc})})
     .then(r=>r.json()).then(function(j){
       if(j&&j.ok){ document.getElementById('nome').value=''; document.getElementById('apelido').value=''; document.getElementById('nasc').value=''; carregar(); }
       else throw new Error('erro');
