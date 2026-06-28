@@ -67,6 +67,24 @@
 
   #lightbox{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:16px;cursor:zoom-out;}
   #lightbox img{max-width:100%;max-height:100%;border-radius:8px;}
+
+  @keyframes saltita{0%,60%,100%{transform:translateY(0);}15%{transform:translateY(-6px);}30%{transform:translateY(0);}45%{transform:translateY(-3px);}}
+  .hbadge{animation:saltita 1.4s ease-in-out infinite;}
+
+  /* Impressao: lista de tarefas por fazer */
+  #printArea{display:none;}
+  @media print{
+    @page{size:A4;margin:16mm 14mm;}
+    header,.add,#lista,#lightbox{display:none !important;}
+    #printArea{display:block !important;color:#000;font-size:13px;}
+    #printArea h1{font-size:22px;margin:0 0 2px;color:#000;}
+    #printArea .psub{font-size:12px;color:#555;margin-bottom:14px;border-bottom:2px solid #FF8100;padding-bottom:8px;}
+    #printArea h2{font-size:14px;margin:16px 0 6px;color:#8a4500;}
+    #printArea ul{list-style:none;margin:0;padding:0;}
+    #printArea li{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #eee;page-break-inside:avoid;}
+    #printArea .box{flex:none;width:14px;height:14px;border:1.5px solid #333;border-radius:3px;margin-top:1px;}
+    #printArea i{color:#555;font-style:italic;}
+  }
 </style>
 </head>
 <body>
@@ -80,7 +98,10 @@
         <p>Sport Zone &#xB7; Vasco da Gama</p>
       </div>
     </div>
-    <a class="icon-btn" href="index.html" title="Menu principal" aria-label="Menu principal">&#x1F3E0;</a>
+    <div style="display:flex;gap:8px;flex:none;">
+      <button class="icon-btn" id="btnPrint" type="button" title="Imprimir tarefas por fazer" aria-label="Imprimir tarefas por fazer">&#x1F5A8;&#xFE0F;</button>
+      <a class="icon-btn" href="index.html" title="Menu principal" aria-label="Menu principal">&#x1F3E0;</a>
+    </div>
   </div>
 </header>
 
@@ -88,7 +109,7 @@
   <div class="add">
     <textarea id="texto" placeholder="Escreve o lembrete/tarefa..."></textarea>
     <div class="row">
-      <input type="text" id="autor" placeholder="O nome de quem far&#xE1; a tarefa" autocomplete="name">
+      <input type="text" id="autor" placeholder="Quem far&#xE1; a tarefa (opcional)" autocomplete="name">
       <select id="seccao"></select>
       <button id="btnFoto" type="button">&#x1F4F7; Foto</button>
       <button id="btnAdd">&#xFF0B; Adicionar</button>
@@ -98,6 +119,8 @@
   </div>
   <div id="lista"></div>
 </main>
+
+<div id="printArea"></div>
 
 <div id="lightbox" onclick="this.style.display='none'"><img id="lbImg" alt="foto"></div>
 
@@ -204,12 +227,34 @@ function comprimir(file, cb){
 }
 function abrirFoto(src){ document.getElementById('lbImg').src=src; document.getElementById('lightbox').style.display='flex'; }
 
+/* ---- Imprimir tarefas por fazer ---- */
+document.getElementById('btnPrint').addEventListener('click',imprimir);
+function imprimir(){
+  const hoje=new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});
+  let html='<h1>Tarefas por fazer</h1><div class="psub">Sport Zone &middot; Vasco da Gama &middot; '+esc(hoje)+'</div>';
+  let total=0;
+  SECS.forEach(function(s){
+    const itens=NOTAS.filter(function(n){return n.seccao===s.k && !isDone(n);});
+    if(!itens.length) return;
+    itens.sort(function(a,b){ return new Date(a.data)-new Date(b.data); });
+    html+='<h2>'+s.ic+' '+esc(s.nm)+'</h2><ul>';
+    itens.forEach(function(n){
+      total++;
+      const t=parteTexto(n.texto).trim() || '(foto)';
+      html+='<li><span class="box"></span><span>'+esc(t)+(n.autor?' <i>\u2014 '+esc(n.autor)+'</i>':'')+'</span></li>';
+    });
+    html+='</ul>';
+  });
+  if(!total){ html+='<p>N\u00E3o h\u00E1 tarefas por fazer \u{1F389}</p>'; }
+  document.getElementById('printArea').innerHTML=html;
+  window.print();
+}
+
 document.getElementById('btnAdd').addEventListener('click',function(){
   const texto=document.getElementById('texto').value.trim();
   const autor=document.getElementById('autor').value.trim();
   const seccao=document.getElementById('seccao').value;
   if(!texto && !pendingFoto){ alert('Escreve o lembrete/tarefa ou anexa uma foto.'); return; }
-  if(!autor){ alert('Escreve o nome de quem far\u00E1 a tarefa.'); document.getElementById('autor').focus(); return; }
   if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return; }
   const textoFinal = texto + (pendingFoto ? IMGSEP+pendingFoto : '');
   const btn=this; btn.disabled=true; btn.textContent='A guardar\u2026';
