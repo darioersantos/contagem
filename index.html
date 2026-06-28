@@ -49,6 +49,23 @@
 
   footer{text-align:center;color:var(--muted);font-size:11px;margin-top:24px;}
 
+  /* PIN gate */
+  #pin{position:fixed;inset:0;z-index:10000;background:linear-gradient(135deg,#FF8100,#E66200);display:flex;align-items:center;justify-content:center;transition:opacity .4s ease;}
+  #pin.hide{opacity:0;pointer-events:none;}
+  #pin .pin-box{text-align:center;width:300px;max-width:88vw;}
+  #pin img{width:84px;height:84px;border-radius:18px;background:#fff;padding:8px;margin-bottom:14px;box-shadow:0 8px 28px rgba(0,0,0,.25);}
+  #pin .pin-title{color:#fff;font-size:18px;font-weight:800;margin-bottom:16px;}
+  #pin .pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:8px;}
+  #pin .pin-dots span{width:15px;height:15px;border-radius:50%;border:2px solid #fff;}
+  #pin .pin-dots span.on{background:#fff;}
+  #pin .pin-err{color:#fff;font-size:13px;font-weight:700;height:18px;margin-bottom:10px;}
+  #pin.shake .pin-box{animation:pinsk .4s;}
+  @keyframes pinsk{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+  #pin .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  #pin .pin-pad button{height:62px;border:none;border-radius:14px;background:rgba(255,255,255,.18);color:#fff;font-size:24px;font-weight:700;cursor:pointer;font-family:inherit;}
+  #pin .pin-pad button:active{background:rgba(255,255,255,.34);}
+  #pin .pin-pad .blank{background:none;}
+
   /* Splash */
   #splash{position:fixed;inset:0;z-index:9999;background:#FF8100;display:flex;align-items:center;justify-content:center;transition:opacity .55s ease;}
   #splash.hide{opacity:0;pointer-events:none;}
@@ -59,6 +76,16 @@
 </style>
 </head>
 <body>
+
+<div id="pin">
+  <div class="pin-box">
+    <img id="pinLogo" alt="Sport Zone">
+    <div class="pin-title">C&#xF3;digo de acesso</div>
+    <div class="pin-dots" id="pinDots"></div>
+    <div class="pin-err" id="pinErr"></div>
+    <div class="pin-pad" id="pinPad"></div>
+  </div>
+</div>
 
 <div id="splash">
   <div class="splash-inner">
@@ -155,7 +182,7 @@ function updateNotifLembretes(){
   var B=(window.BACKEND_URL?String(window.BACKEND_URL).trim():''); if(!B) return;
   fetch(B+'?action=notas&t='+Date.now()).then(function(r){return r.json();}).then(function(j){
     if(!j||!j.ok||!Array.isArray(j.notas)) return;
-    var n=j.notas.filter(function(x){return !(x.done===true||String(x.done).toLowerCase()==='true');}).length;
+    var n=j.notas.filter(function(x){return String(x.seccao)!=='_aniversario' && !(x.done===true||String(x.done).toLowerCase()==='true');}).length;
     var tile=document.querySelector('.tile[data-key="lembretes"]');
     if(tile && n>0){ var b=document.createElement('span'); b.className='tile-badge'; b.textContent=n>99?'99+':n; tile.appendChild(b); }
   }).catch(function(){});
@@ -163,6 +190,31 @@ function updateNotifLembretes(){
 render();
 updateNotifLembretes();
 
+/* PIN gate */
+(function(){
+  var pin=document.getElementById('pin');
+  if(localStorage.getItem('portalOK')==='1'){ if(pin&&pin.parentNode) pin.parentNode.removeChild(pin); return; }
+  var hdr=document.querySelector('.logo img'); if(hdr) document.getElementById('pinLogo').src=hdr.src;
+  var dotsEl=document.getElementById('pinDots');
+  for(var i=0;i<4;i++) dotsEl.appendChild(document.createElement('span'));
+  var dots=dotsEl.children, CODE='0000', val='';
+  function upd(){ for(var i=0;i<4;i++) dots[i].className=i<val.length?'on':''; }
+  function add(d){
+    if(val.length>=4) return;
+    val+=d; upd();
+    if(val.length===4){
+      if(val===CODE){ localStorage.setItem('portalOK','1'); pin.classList.add('hide'); setTimeout(function(){ if(pin.parentNode) pin.parentNode.removeChild(pin); },420); }
+      else { document.getElementById('pinErr').textContent='C\u00F3digo errado'; pin.classList.add('shake'); setTimeout(function(){ pin.classList.remove('shake'); val=''; upd(); },420); }
+    }
+  }
+  var pad=document.getElementById('pinPad');
+  ['1','2','3','4','5','6','7','8','9','','0','\u232B'].forEach(function(k){
+    var b=document.createElement('button');
+    if(k===''){ b.className='blank'; b.disabled=true; }
+    else { b.textContent=k; b.onclick=function(){ document.getElementById('pinErr').textContent=''; if(k==='\u232B'){ val=val.slice(0,-1); upd(); } else add(k); }; }
+    pad.appendChild(b);
+  });
+})();
 /* Splash */
 (function(){
   var s=document.getElementById('splash');
