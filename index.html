@@ -117,8 +117,8 @@
 const SECTIONS = [
   { t:'Aplica\u00E7\u00F5es', app:true, items:[
     {k:'lembretes', ic:'\u{1F4CC}', nm:'Lembretes'},
-    {k:'superliga', ic:'\u{1F3C6}', nm:'Super Liga'},
-    {k:'contagem',  ic:'\u{1F4B6}', nm:'Contagem de Dinheiro'}
+    {k:'contagem',  ic:'\u{1F4B6}', nm:'Contagem de Dinheiro'},
+    {k:'superliga', ic:'\u{1F3C6}', nm:'Super Liga'}
   ]},
   { t:'Templates', items:[
     {k:'sinaletica',      ic:'\u{1FAA7}', nm:'Sinal\u00E9tica'},
@@ -219,6 +219,10 @@ updateNotifLembretes();
 /* Splash */
 (function(){
   var s=document.getElementById('splash');
+  if(!s) return;
+  // splash so na entrada da app (1 vez por sessao); ao voltar ao menu nao reaparece
+  if(sessionStorage.getItem('splashSeen')==='1'){ if(s.parentNode) s.parentNode.removeChild(s); return; }
+  sessionStorage.setItem('splashSeen','1');
   setTimeout(function(){ if(s){ s.classList.add('hide'); setTimeout(function(){ if(s&&s.parentNode) s.parentNode.removeChild(s); },600); } },1700);
 })();
 </script>
