@@ -91,7 +91,8 @@
     @page{size:A4;margin:16mm 14mm;}
     header,.add,#lista,#lightbox{display:none !important;}
     #printArea{display:block !important;color:#000;font-size:13px;}
-    #printArea h1{font-size:22px;margin:0 0 2px;color:#000;}
+    #printArea h1{font-size:18px;margin:0 0 2px;color:#000;}
+    #printArea .pdia{font-size:25px;font-weight:800;color:#1a1303;margin:0 0 2px;text-transform:capitalize;}
     #printArea .psub{font-size:12px;color:#555;margin-bottom:14px;border-bottom:2px solid #FF8100;padding-bottom:8px;}
     #printArea h2{font-size:14px;margin:16px 0 6px;color:#8a4500;}
     #printArea ul{list-style:none;margin:0;padding:0;}
@@ -264,7 +265,7 @@ function abrirFoto(src){ document.getElementById('lbImg').src=src; document.getE
 document.getElementById('btnPrint').addEventListener('click',imprimir);
 function imprimir(){
   const hoje=new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});
-  let html='<h1>Tarefas por fazer</h1><div class="psub">Sport Zone &middot; Vasco da Gama &middot; '+esc(hoje)+'</div>';
+  let html='<h1>Tarefas do dia</h1><div class="pdia">'+esc(hoje)+'</div><div class="psub">Sport Zone &middot; Vasco da Gama</div>';
   let total=0;
   SECS.forEach(function(s){
     const itens=NOTAS.filter(function(n){return n.seccao===s.k && !isDone(n);});
