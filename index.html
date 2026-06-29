@@ -41,13 +41,32 @@
   @media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr);}}
   @media(min-width:820px){.grid{grid-template-columns:repeat(4,1fr);}}
 
-  .tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 10px;box-shadow:var(--shadow);cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:108px;transition:transform .12s ease, box-shadow .12s ease;color:var(--ink);text-decoration:none;}
-  .tile:active{transform:scale(.96);}
-  .tile:hover{box-shadow:0 6px 22px rgba(26,19,3,.12);}
-  .tile .ic{font-size:30px;line-height:1;}
+  .tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 10px;box-shadow:var(--shadow);cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:108px;transition:all .2s ease;color:var(--ink);text-decoration:none;}
+  .tile:active{transform:scale(.97);}
+  .tile:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(26,19,3,.15);}
+  .tile .ic{line-height:0;color:var(--accent);}
+  .tile.app .ic{color:#fff;}
+  .tile .ic svg{width:28px;height:28px;stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;}
   .tile .nm{font-size:13px;font-weight:700;line-height:1.2;}
-  .tile.soon{opacity:.55;cursor:default;}
+  .tile.soon{opacity:.5;cursor:default;}
+  .tile.soon .ic{color:#b9b0a3;}
+  .tile.soon:hover{transform:none;box-shadow:var(--shadow);}
   .tile.soon:active{transform:none;}
+  .tile .lock{position:absolute;top:8px;left:8px;color:#b9b0a3;line-height:0;}
+  .tile .lock svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;}
+  @keyframes cardin{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .tile{animation:cardin .35s ease backwards;}
+  @media (prefers-reduced-motion:reduce){.tile{animation:none;}}
+  .sk-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  @media(min-width:560px){.sk-grid{grid-template-columns:repeat(3,1fr);}}
+  @media(min-width:820px){.sk-grid{grid-template-columns:repeat(4,1fr);}}
+  .sk{height:108px;border-radius:16px;background:linear-gradient(100deg,#efeae3 30%,#f7f3ee 50%,#efeae3 70%);background-size:200% 100%;animation:shimmer 1.2s infinite;}
+  @keyframes shimmer{from{background-position:200% 0;}to{background-position:-200% 0;}}
+  #evalBanner .evalrem{display:flex;align-items:center;gap:12px;background:#1a1303;color:#fff;border-radius:16px;padding:14px 16px;margin:14px 0 2px;text-decoration:none;box-shadow:var(--shadow);}
+  #evalBanner .evalrem .ic{line-height:0;color:#ffb45e;flex:none;}
+  #evalBanner .evalrem .ic svg{width:26px;height:26px;stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  #evalBanner .evalrem .txt{flex:1;min-width:0;font-size:14px;line-height:1.35;font-weight:600;}
+  #evalBanner .evalrem .txt b{font-weight:800;color:#ffb45e;}
   .tile .soon-tag{position:absolute;top:7px;right:7px;background:#efe9e0;color:#9a8f7d;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;}
   .tile.app{background:linear-gradient(135deg,#FF8100,#E66200);color:#fff;border:none;box-shadow:0 4px 16px rgba(230,98,0,.3);}
   .tile.app .nm{color:#fff;}
@@ -128,8 +147,9 @@
 
 <main>
   <div id="bdayBanner"></div>
+  <div id="evalBanner"></div>
   <div class="search-wrap"><input type="search" id="searchBox" placeholder="&#x1F50E; Procurar formul&#xE1;rio, gui&#xE3;o ou imprim&#xED;vel&#x2026;" autocomplete="off"></div>
-  <div id="portal"></div>
+  <div id="portal"><div class="section"><div class="sk-grid"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div></div>
   <div id="noResults">Nada encontrado. Tenta outra palavra.</div>
   <footer>Sport Zone &#xB7; Vasco da Gama &#x2014; Portal de Gest&#xE3;o de Loja</footer>
   <div class="page-legal"><b>Aplica&#xE7;&#xE3;o n&#xE3;o oficial</b>Projeto independente de apoio &#xE0; equipa. N&#xE3;o &#xE9; uma aplica&#xE7;&#xE3;o institucional nem afiliada &#xE0; empresa. Em caso de diverg&#xEA;ncia, prevalecem sempre as comunica&#xE7;&#xF5;es e procedimentos oficiais da empresa.</div>
@@ -140,56 +160,59 @@
 
 const SECTIONS = [
   { t:'Aplica\u00E7\u00F5es', app:true, items:[
-    {k:'lembretes',          ic:'\uD83D\uDCCC', nm:'Lembretes'},
-    {k:'checklist_abertura', ic:'\uD83D\uDD13', nm:'Checklist Abertura'},
-    {k:'checklist_fecho',    ic:'\uD83D\uDD12', nm:'Checklist Fecho'},
-    {k:'contagem',           ic:'\uD83D\uDCB6', nm:'Contagem de Dinheiro'},
-    {k:'superliga',          ic:'\uD83C\uDFC6', nm:'Super Liga'}
+    {k:'lembretes',  ic:'list-checks',     nm:'Tarefas'},
+    {k:'checklists', ic:'clipboard-check', nm:'Checklist Abertura/Fecho'},
+    {k:'contagem',   ic:'calculator',      nm:'Contagem de Dinheiro'},
+    {k:'superliga',  ic:'trophy',          nm:'Super Liga'}
   ]},
   { t:'Plano Formativo Interno', items:[
-    {k:'pf_atendimento',  ic:'\uD83E\uDD1D', nm:'Atendimento ao cliente'},
-    {k:'pf_szclub',       ic:'\uD83C\uDF9F\uFE0F', nm:'SZ Club'},
-    {k:'pf_onlines',      ic:'\uD83C\uDF10', nm:'Venda de onlines'},
-    {k:'pf_sprays',       ic:'\uD83E\uDDF4', nm:'Venda de sprays'},
-    {k:'pf_palmilhas',    ic:'\uD83E\uDDB6', nm:'Venda de palmilhas'},
-    {k:'pf_entrada',      ic:'\uD83D\uDEAA', nm:'Entrada de loja'},
-    {k:'pf_provadores',   ic:'\uD83E\uDE9E', nm:'Provadores'}
+    {k:'pf_atendimento', ic:'users',       nm:'Atendimento ao cliente'},
+    {k:'pf_szclub',      ic:'ticket',      nm:'SZ Club'},
+    {k:'pf_onlines',     ic:'globe',       nm:'Venda de onlines'},
+    {k:'pf_sprays',      ic:'spray-can',   nm:'Venda de sprays'},
+    {k:'pf_palmilhas',   ic:'footprints',  nm:'Venda de palmilhas'},
+    {k:'pf_entrada',     ic:'door-open',   nm:'Entrada de loja'},
+    {k:'pf_provadores',  ic:'shirt',       nm:'Provadores'}
   ]},
   { t:'Formul\u00E1rios', items:[
-    {k:'happyhour',         ic:'\uD83D\uDCB0', nm:'Happy Hour'},
-    {k:'limpeza',           ic:'\uD83E\uDDF9', nm:'Checklist de Loja'},
-    {k:'alarmado',          ic:'\uD83C\uDFF7\uFE0F', nm:'Alarmado'},
-    {k:'admissao',          ic:'\uD83D\uDCDD', nm:'Pedido de Admiss\u00E3o'},
-    {k:'avaliacoes',        ic:'\u2B50', nm:'Avalia\u00E7\u00F5es'},
-    {k:'atendimento_loja',  ic:'\uD83D\uDECD\uFE0F', nm:'Atendimento Loja'},
-    {k:'atendimento_caixa', ic:'\uD83E\uDDFE', nm:'Atendimento Caixa'},
-    {k:'aniversario',       ic:'\uD83C\uDF82', nm:'Anivers\u00E1rio'},
-    {k:'limitacoes_horario',ic:'\u23F0', nm:'Limita\u00E7\u00F5es de Hor\u00E1rio'},
-    {k:'satisfacao_staff',  ic:'\uD83D\uDE0A', nm:'Satisfa\u00E7\u00E3o Staff'},
-    {k:'ferias',            ic:'\uD83C\uDFD6\uFE0F', nm:'Pedido de F\u00E9rias'}
+    {k:'happyhour',          ic:'banknote',      nm:'Happy Hour'},
+    {k:'limpeza',            ic:'clipboard-list',nm:'Checklist de Loja'},
+    {k:'alarmado',           ic:'tag',           nm:'Alarmado'},
+    {k:'admissao',           ic:'user-plus',     nm:'Pedido de Admiss\u00E3o'},
+    {k:'avaliacoes',         ic:'star',          nm:'Avalia\u00E7\u00F5es Mensais'},
+    {k:'atendimento_loja',   ic:'shopping-bag',  nm:'Atendimento Loja'},
+    {k:'atendimento_caixa',  ic:'receipt',       nm:'Atendimento Caixa'},
+    {k:'aniversario',        ic:'cake',          nm:'Anivers\u00E1rio'},
+    {k:'limitacoes_horario', ic:'clock',         nm:'Limita\u00E7\u00F5es de Hor\u00E1rio'},
+    {k:'satisfacao_staff',   ic:'smile',         nm:'Satisfa\u00E7\u00E3o Staff'},
+    {k:'ferias',             ic:'umbrella',      nm:'Pedido de F\u00E9rias'}
   ]},
   { t:'Imprim\u00EDveis', items:[
-    {k:'sinaletica',      ic:'\uD83E\uDEA7', nm:'Sinal\u00E9tica'},
-    {k:'alarmes',         ic:'\uD83D\uDEA8', nm:'Alarmes'},
-    {k:'entradas_saidas', ic:'\uD83D\uDC64', nm:'Registo de Funcion\u00E1rio'},
-    {k:'dispositivos',    ic:'\uD83D\uDCF1', nm:'Equipamentos'},
-    {k:'daily_float',     ic:'\uD83D\uDCB7', nm:'Daily Float'},
-    {k:'movimento_cofre', ic:'\uD83D\uDD12', nm:'Movimento Cofre'},
-    {k:'vdl',             ic:'\uD83D\uDCE6', nm:'VDL'},
-    {k:'folha_reserva',   ic:'\uD83D\uDCD1', nm:'Folha Reserva'},
-    {k:'folha_elogio',    ic:'\uD83C\uDF1F', nm:'Folha de Elogio'}
+    {k:'sinaletica',      ic:'signpost',       nm:'Sinal\u00E9tica'},
+    {k:'alarmes',         ic:'siren',          nm:'Alarmes'},
+    {k:'entradas_saidas', ic:'user',           nm:'Registo de Funcion\u00E1rio'},
+    {k:'dispositivos',    ic:'smartphone',     nm:'Equipamentos'},
+    {k:'daily_float',     ic:'pound-sterling', nm:'Daily Float'},
+    {k:'movimento_cofre', ic:'lock',           nm:'Movimento Cofre'},
+    {k:'vdl',             ic:'package',        nm:'VDL'},
+    {k:'folha_reserva',   ic:'clipboard',      nm:'Folha Reserva'},
+    {k:'folha_elogio',    ic:'award',          nm:'Folha de Elogio'}
   ]},
   { t:'Outros', items:[
-    {k:'passwords',    ic:'\uD83D\uDD11', nm:'Lista de Passwords'},
-    {k:'competencias', ic:'\uD83D\uDCCA', nm:'Mapa de Compet\u00EAncias'}
+    {k:'caderno',      ic:'book-open',   nm:'Caderno de Acompanhamento'},
+    {k:'passwords',    ic:'key-round',   nm:'Lista de Passwords'},
+    {k:'competencias', ic:'bar-chart-3', nm:'Mapa de Compet\u00EAncias'}
   ]}
 ];
 
 function isExt(u){ return /^https?:\/\//i.test(u); }
 function linkFor(k){ return (window.PORTAL_LINKS && window.PORTAL_LINKS[k]) ? String(window.PORTAL_LINKS[k]).trim() : ''; }
 
+var ICONS={"award":"<circle cx=\"12\" cy=\"8\" r=\"6\" /> <path d=\"M15.477 12.89 17 22l-5-3-5 3 1.523-9.11\" />","banknote":"<rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" /> <path d=\"M6 12h.01M18 12h.01\" />","bar-chart-3":"<path d=\"M3 3v18h18\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />","cake":"<path d=\"M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8\" /> <path d=\"M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1\" /> <path d=\"M2 21h20\" /> <path d=\"M7 8v3\" /> <path d=\"M12 8v3\" /> <path d=\"M17 8v3\" /> <path d=\"M7 4h0.01\" /> <path d=\"M12 4h0.01\" /> <path d=\"M17 4h0.01\" />","calculator":"<rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /> <line x1=\"8\" x2=\"16\" y1=\"6\" y2=\"6\" /> <line x1=\"16\" x2=\"16\" y1=\"14\" y2=\"18\" /> <path d=\"M16 10h.01\" /> <path d=\"M12 10h.01\" /> <path d=\"M8 10h.01\" /> <path d=\"M12 14h.01\" /> <path d=\"M8 14h.01\" /> <path d=\"M12 18h.01\" /> <path d=\"M8 18h.01\" />","calendar-clock":"<path d=\"M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5\" /> <path d=\"M16 2v4\" /> <path d=\"M8 2v4\" /> <path d=\"M3 10h5\" /> <path d=\"M17.5 17.5 16 16.25V14\" /> <path d=\"M22 16a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z\" />","clipboard":"<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" />","clipboard-check":"<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"m9 14 2 2 4-4\" />","clipboard-list":"<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"M12 11h4\" /> <path d=\"M12 16h4\" /> <path d=\"M8 11h.01\" /> <path d=\"M8 16h.01\" />","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />","door-open":"<path d=\"M13 4h3a2 2 0 0 1 2 2v14\" /> <path d=\"M2 20h3\" /> <path d=\"M13 20h9\" /> <path d=\"M10 12v.01\" /> <path d=\"M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4-1A2 2 0 0 1 13 4.561Z\" />","footprints":"<path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z\" /> <path d=\"M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z\" /> <path d=\"M16 17h4\" /> <path d=\"M4 13h4\" />","globe":"<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\" /> <path d=\"M2 12h20\" />","key-round":"<path d=\"M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z\" /> <circle cx=\"16.5\" cy=\"7.5\" r=\".5\" />","list-checks":"<path d=\"m3 17 2 2 4-4\" /> <path d=\"m3 7 2 2 4-4\" /> <path d=\"M13 6h8\" /> <path d=\"M13 12h8\" /> <path d=\"M13 18h8\" />","lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />","package":"<path d=\"m7.5 4.27 9 5.15\" /> <path d=\"M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\" /> <path d=\"m3.3 7 8.7 5 8.7-5\" /> <path d=\"M12 22V12\" />","pound-sterling":"<path d=\"M18 7c0-5.333-8-5.333-8 0\" /> <path d=\"M10 7v14\" /> <path d=\"M6 21h12\" /> <path d=\"M6 13h10\" />","receipt":"<path d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z\" /> <path d=\"M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8\" /> <path d=\"M12 17V7\" />","shirt":"<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\" />","shopping-bag":"<path d=\"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z\" /> <path d=\"M3 6h18\" /> <path d=\"M16 10a4 4 0 0 1-8 0\" />","signpost":"<path d=\"M12 3v3\" /> <path d=\"M18.5 13h-13L2 9.5 5.5 6h13L22 9.5Z\" /> <path d=\"M12 13v8\" />","siren":"<path d=\"M7 12a5 5 0 0 1 5-5v0a5 5 0 0 1 5 5v6H7v-6Z\" /> <path d=\"M5 20a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2H5v-2Z\" /> <path d=\"M21 12h1\" /> <path d=\"M18.5 4.5 18 5\" /> <path d=\"M2 12h1\" /> <path d=\"M12 2v1\" /> <path d=\"m4.929 4.929.707.707\" /> <path d=\"M12 12v6\" />","smartphone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\" /> <path d=\"M12 18h.01\" />","smile":"<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M8 14s1.5 2 4 2 4-2 4-2\" /> <line x1=\"9\" x2=\"9.01\" y1=\"9\" y2=\"9\" /> <line x1=\"15\" x2=\"15.01\" y1=\"9\" y2=\"9\" />","spray-can":"<path d=\"M3 3h.01\" /> <path d=\"M7 5h.01\" /> <path d=\"M11 7h.01\" /> <path d=\"M3 7h.01\" /> <path d=\"M7 9h.01\" /> <path d=\"M3 11h.01\" /> <rect width=\"4\" height=\"4\" x=\"15\" y=\"5\" /> <path d=\"m19 9 2 2v10c0 .6-.4 1-1 1h-6c-.6 0-1-.4-1-1V11l2-2\" /> <path d=\"m13 14 8-2\" /> <path d=\"m13 19 8-2\" />","star":"<polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\" />","tag":"<path d=\"M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z\" /> <path d=\"M7 7h.01\" />","ticket":"<path d=\"M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z\" /> <path d=\"M13 5v2\" /> <path d=\"M13 17v2\" /> <path d=\"M13 11v2\" />","trophy":"<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\" /> <path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\" /> <path d=\"M4 22h16\" /> <path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\" /> <path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\" /> <path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\" />","umbrella":"<path d=\"M22 12a10.06 10.06 1 0 0-20 0Z\" /> <path d=\"M12 12v8a2 2 0 0 0 4 0\" /> <path d=\"M12 2v1\" />","user":"<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />","user-plus":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" /> <line x1=\"19\" x2=\"19\" y1=\"8\" y2=\"14\" /> <line x1=\"22\" x2=\"16\" y1=\"11\" y2=\"11\" />","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" /> <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /> <path d=\"M16 3.13a4 4 0 0 1 0 7.75\" />","book-open":"<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\" /> <path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\" />","door-closed":"<path d=\"M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14\" /> <path d=\"M2 20h20\" /> <path d=\"M14 12v.01\" />"};
+function svgIcon(n){ return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'; }
+var _tileIdx=0;
 function render(){
-  const root=document.getElementById('portal'); root.innerHTML='';
+  const root=document.getElementById('portal'); root.innerHTML=''; _tileIdx=0;
   SECTIONS.forEach(function(sec){
     const s=document.createElement('div'); s.className='section';
     const h=document.createElement('h2'); h.textContent=sec.t; s.appendChild(h);
@@ -202,15 +225,17 @@ function render(){
         tile.href=url;
         if(isExt(url)){ tile.target='_blank'; tile.rel='noopener'; }
         tile.className='tile'+(sec.app?' app':'');
+        tile.addEventListener('click',function(){ try{ if(navigator.vibrate) navigator.vibrate(10); }catch(e){} });
       }else{
         tile=document.createElement('div');
         tile.className='tile soon';
         const tag=document.createElement('span'); tag.className='soon-tag'; tag.textContent='em breve'; tile.appendChild(tag);
-        tile.addEventListener('click',function(){ alert('"'+it.nm+'" ainda n\u00E3o est\u00E1 configurado.\nEm breve!'); });
+        const lk=document.createElement('span'); lk.className='lock'; lk.innerHTML=svgIcon('lock'); tile.appendChild(lk);
       }
       tile.dataset.key=it.k;
       tile.dataset.name=it.nm;
-      const ic=document.createElement('div'); ic.className='ic'; ic.textContent=it.ic; tile.appendChild(ic);
+      tile.style.animationDelay=(_tileIdx*40)+'ms'; _tileIdx++;
+      const ic=document.createElement('div'); ic.className='ic'; ic.innerHTML=svgIcon(it.ic); tile.appendChild(ic);
       const nm=document.createElement('div'); nm.className='nm'; nm.textContent=it.nm; tile.appendChild(nm);
       g.appendChild(tile);
     });
@@ -277,6 +302,19 @@ function checkBirthdays(){
   }).catch(function(){});
 }
 checkBirthdays();
+
+/* ---------- Lembrete de avaliacoes mensais (ultimos 5 dias do mes) ---------- */
+function checkMonthlyEval(){
+  var d=new Date();
+  var lastDay=new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  var diff=lastDay - d.getDate();
+  if(diff<0 || diff>5) return;
+  var url=(window.PORTAL_LINKS&&window.PORTAL_LINKS['avaliacoes'])?window.PORTAL_LINKS['avaliacoes']:'avaliacoes.html';
+  var quando = diff===0 ? 'Hoje \u00e9 o \u00faltimo dia do m\u00eas' : (diff===1 ? 'Falta 1 dia para o fim do m\u00eas' : ('Faltam '+diff+' dias para o fim do m\u00eas'));
+  var box=document.getElementById('evalBanner');
+  if(box) box.innerHTML='<a class="evalrem" href="'+url+'"><span class="ic">'+svgIcon('calendar-clock')+'</span><span class="txt">'+quando+'. N\u00e3o te esque\u00e7as de fazer as <b>avalia\u00e7\u00f5es mensais</b> dos colaboradores.</span></a>';
+}
+checkMonthlyEval();
 
 /* PIN gate */
 (function(){
