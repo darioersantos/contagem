@@ -63,6 +63,17 @@
   .btn{flex:1;min-width:150px;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;}
   .btn.print{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(230,98,0,.3);}
   .btn.reset{background:#fff;border:2px solid var(--line);color:var(--neg);}
+  .btn.arq{background:#fff;border:2px solid var(--accent);color:var(--accent-dark);}
+  #histView{display:none;}
+  body.hh-hist main>.card,body.hh-hist main>.actions{display:none !important;}
+  body.hh-hist #histView{display:block;}
+  .hh-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;margin-top:10px;background:#fff;}
+  .hh-info{flex:1;min-width:0;font-size:14px;}
+  .hh-info b{color:var(--accent-dark);}
+  .hh-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+  .hh-acts{display:flex;flex-direction:column;gap:6px;flex:none;}
+  .hh-print{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 13px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}
+  .hh-del{background:none;border:none;color:var(--neg);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
 
   /* Impressao em PDF */
   #printArea{display:none;}
@@ -96,6 +107,7 @@
       </div>
     </div>
     <div class="h-actions">
+      <button class="icon-btn" id="btnHistView" type="button" title="Hist&#xF3;rico" aria-label="Hist&#xF3;rico">&#x1F4DA;</button>
       <button class="icon-btn" id="btnPrint" type="button" title="Imprimir / PDF" aria-label="Imprimir">&#x1F5A8;&#xFE0F;</button>
       <a class="icon-btn" href="index.html" title="Menu principal" aria-label="Menu principal">&#x1F3E0;</a>
     </div>
@@ -118,11 +130,11 @@
     </div>
   </div>
 
+  <div class="card"><div class="metric"><div class="m-lbl"><span class="ic">&#x1F91D;</span> Atendimentos</div><div class="stepper"><button class="minus" data-k="atend" data-d="-1">&#x2212;</button><span class="val" id="v-atend">0</span><button class="plus" data-k="atend" data-d="1">&#xFF0B;</button></div></div></div>
+
   <div class="card"><div class="metric"><div class="m-lbl"><span class="ic">&#x1F310;</span> Online</div><div class="stepper"><button class="minus" data-k="online" data-d="-1">&#x2212;</button><span class="val" id="v-online">0</span><button class="plus" data-k="online" data-d="1">&#xFF0B;</button></div></div></div>
 
   <div class="card"><div class="metric"><div class="m-lbl"><span class="ic">&#x1F9F4;</span> Sprays</div><div class="stepper"><button class="minus" data-k="sprays" data-d="-1">&#x2212;</button><span class="val" id="v-sprays">0</span><button class="plus" data-k="sprays" data-d="1">&#xFF0B;</button></div></div></div>
-
-  <div class="card"><div class="metric"><div class="m-lbl"><span class="ic">&#x1F91D;</span> Atendimentos</div><div class="stepper"><button class="minus" data-k="atend" data-d="-1">&#x2212;</button><span class="val" id="v-atend">0</span><button class="plus" data-k="atend" data-d="1">&#xFF0B;</button></div></div></div>
 
   <div class="card"><div class="metric"><div class="m-lbl"><span class="ic">&#x1F39F;&#xFE0F;</span> SZ Club</div><div class="stepper"><button class="minus" data-k="szclub" data-d="-1">&#x2212;</button><span class="val" id="v-szclub">0</span><button class="plus" data-k="szclub" data-d="1">&#xFF0B;</button></div></div></div>
 
@@ -137,7 +149,17 @@
 
   <div class="actions">
     <button class="btn print" id="btnPrint2" type="button">&#x1F5A8;&#xFE0F; Imprimir / Guardar PDF</button>
+    <button class="btn arq" id="btnArquivar" type="button">&#x1F4E5; Guardar no hist&#xF3;rico</button>
     <button class="btn reset" id="btnReset" type="button">&#x1F5D1;&#xFE0F; Nova Happy Hour</button>
+  </div>
+
+  <div id="histView">
+    <button class="btn reset" id="histBack" type="button" style="width:auto;margin-bottom:12px;">&#x2190; Voltar</button>
+    <div class="card" style="padding:16px;">
+      <div style="font-weight:800;font-size:16px;">&#x1F4DA; Hist&#xF3;rico de Happy Hour</div>
+      <p style="margin:6px 0 0;color:var(--muted);font-size:13px;">Sess&#xF5;es guardadas. Toca em Imprimir para reimprimir.</p>
+      <div id="hh-list"></div>
+    </div>
   </div>
 </main>
 
@@ -150,6 +172,24 @@ function today(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth(
 function euro(n){ return (Number(n)||0).toLocaleString('pt-PT',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}); }
 function num(v){ var n=parseFloat(String(v).replace(',','.')); return isNaN(n)?0:n; }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const BACKEND=(typeof window!=='undefined'&&window.BACKEND_URL?String(window.BACKEND_URL).trim():'');
+
+/* som + vibracao ao clicar nos +/- (mobile) */
+var _actx;
+function feedbackClick(){
+  try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
+  try{
+    _actx=_actx||new (window.AudioContext||window.webkitAudioContext)();
+    if(_actx.state==='suspended') _actx.resume();
+    var o=_actx.createOscillator(), g=_actx.createGain();
+    o.type='square'; o.frequency.value=640;
+    g.gain.setValueAtTime(0.0001,_actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.16,_actx.currentTime+0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001,_actx.currentTime+0.08);
+    o.connect(g); g.connect(_actx.destination);
+    o.start(); o.stop(_actx.currentTime+0.09);
+  }catch(e){}
+}
 
 function defaults(){ return {vendedor:'', avaliador:'', data:today(), online:0, sprays:0, atend:0, szclub:0, valor:0}; }
 let st;
@@ -170,6 +210,7 @@ document.getElementById('data').addEventListener('change',function(){ st.data=th
 
 document.querySelectorAll('.stepper button').forEach(function(b){
   b.addEventListener('click',function(){
+    feedbackClick();
     var k=b.dataset.k, d=parseInt(b.dataset.d,10);
     st[k]=Math.max(0,(st[k]||0)+d);
     document.getElementById('v-'+k).textContent=st[k];
@@ -180,6 +221,7 @@ document.querySelectorAll('.stepper button').forEach(function(b){
 function addValor(sign){
   var a=num(document.getElementById('valAmount').value);
   if(!a){ document.getElementById('valAmount').focus(); return; }
+  feedbackClick();
   st.valor=Math.max(0, Math.round(((st.valor||0)+sign*a)*100)/100);
   document.getElementById('v-valor').textContent=euro(st.valor);
   save();
@@ -192,26 +234,76 @@ document.getElementById('btnReset').addEventListener('click',function(){
   st=defaults(); save(); pinta();
 });
 
-function imprimir(){
-  var d=new Date((st.data||today())+'T00:00:00'); var ds=isNaN(d)?(st.data||''):d.toLocaleDateString('pt-PT');
+function imprimirObj(o){
+  var d=new Date((o.data||today())+'T00:00:00'); var ds=isNaN(d)?(o.data||''):d.toLocaleDateString('pt-PT');
   var html='<h1>Happy Hour</h1><div class="psub">Sport Zone &middot; Vasco da Gama</div>';
   html+='<table class="who"><tbody>'+
-    '<tr><td class="k">Vendedor</td><td class="v">'+esc(st.vendedor||'\u2014')+'</td></tr>'+
-    '<tr><td class="k">Avaliado por</td><td class="v">'+esc(st.avaliador||'\u2014')+'</td></tr>'+
+    '<tr><td class="k">Vendedor</td><td class="v">'+esc(o.vendedor||'\u2014')+'</td></tr>'+
+    '<tr><td class="k">Avaliado por</td><td class="v">'+esc(o.avaliador||'\u2014')+'</td></tr>'+
     '<tr><td class="k">Data</td><td class="v">'+esc(ds)+'</td></tr>'+
     '</tbody></table>';
   html+='<h2>Resultados</h2><table class="res"><tbody>'+
-    '<tr><td>\u{1F310} Online</td><td class="n">'+(st.online||0)+'</td></tr>'+
-    '<tr><td>\u{1F9F4} Sprays</td><td class="n">'+(st.sprays||0)+'</td></tr>'+
-    '<tr><td>\u{1F91D} Atendimentos</td><td class="n">'+(st.atend||0)+'</td></tr>'+
-    '<tr><td>\u{1F39F}\uFE0F SZ Club</td><td class="n">'+(st.szclub||0)+'</td></tr>'+
-    '<tr class="tot"><td>\u{1F4B6} Valor das vendas</td><td class="n">'+euro(st.valor||0)+'</td></tr>'+
+    '<tr><td>\u{1F91D} Atendimentos</td><td class="n">'+(o.atend||0)+'</td></tr>'+
+    '<tr><td>\u{1F310} Online</td><td class="n">'+(o.online||0)+'</td></tr>'+
+    '<tr><td>\u{1F9F4} Sprays</td><td class="n">'+(o.sprays||0)+'</td></tr>'+
+    '<tr><td>\u{1F39F}\uFE0F SZ Club</td><td class="n">'+(o.szclub||0)+'</td></tr>'+
+    '<tr class="tot"><td>\u{1F4B6} Valor das vendas</td><td class="n">'+euro(o.valor||0)+'</td></tr>'+
     '</tbody></table>';
   document.getElementById('printArea').innerHTML=html;
   setTimeout(function(){ window.print(); },120);
 }
+function imprimir(){ imprimirObj(st); }
 document.getElementById('btnPrint').addEventListener('click',imprimir);
 document.getElementById('btnPrint2').addEventListener('click',imprimir);
+
+/* ---- Historico de Happy Hour (guardado como nota seccao=_hhhist; sem mudar Apps Script) ---- */
+let HH=[];
+document.getElementById('btnArquivar').addEventListener('click',function(){
+  if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return; }
+  if(!st.vendedor){ alert('Escreve o nome do vendedor antes de guardar.'); document.getElementById('vendedor').focus(); return; }
+  var btn=this, old=btn.textContent; btn.disabled=true; btn.textContent='A guardar\u2026';
+  var detalhe=JSON.stringify({vendedor:st.vendedor,avaliador:st.avaliador,data:st.data,online:st.online,sprays:st.sprays,atend:st.atend,szclub:st.szclub,valor:st.valor});
+  fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'nota_add', seccao:'_hhhist', autor:(st.vendedor||'')+'|'+(st.data||''), texto:detalhe})})
+    .then(r=>r.json()).then(function(j){ if(j&&j.ok){ btn.textContent='\u2713 Guardado no hist\u00F3rico'; setTimeout(function(){btn.textContent=old;btn.disabled=false;},1600); } else throw 0; })
+    .catch(function(){ btn.disabled=false; btn.textContent=old; alert('N\u00E3o foi poss\u00EDvel guardar. Tenta de novo.'); });
+});
+function carregarHH(){
+  var l=document.getElementById('hh-list');
+  if(!BACKEND){ l.innerHTML='<p style="color:var(--muted);font-size:13px;">Sem liga\u00E7\u00E3o \u00E0 nuvem.</p>'; return; }
+  l.innerHTML='<p style="color:var(--muted);font-size:13px;">A carregar\u2026</p>';
+  fetch(BACKEND+'?action=notas&t='+Date.now())
+    .then(r=>r.json()).then(function(j){
+      if(j&&j.ok&&Array.isArray(j.notas)){
+        HH=j.notas.filter(function(n){return String(n.seccao)==='_hhhist';})
+          .map(function(n){ var o={}; try{o=JSON.parse(n.texto||'{}');}catch(e){} o.id=n.id; o.ts=n.data; return o; })
+          .sort(function(a,b){ return new Date(b.ts)-new Date(a.ts); });
+        renderHH();
+      } else { l.innerHTML='<p style="color:var(--muted);font-size:13px;">Sem dados.</p>'; }
+    }).catch(function(){ l.innerHTML='<p style="color:var(--muted);font-size:13px;">Sem liga\u00E7\u00E3o. Recarrega.</p>'; });
+}
+function renderHH(){
+  var l=document.getElementById('hh-list'); l.innerHTML='';
+  if(!HH.length){ l.innerHTML='<p style="color:var(--muted);font-size:13px;">Ainda n\u00E3o h\u00E1 happy hours guardadas.</p>'; return; }
+  HH.forEach(function(o){
+    var d=new Date((o.data||'')+'T00:00:00'); var ds=isNaN(d)?(o.data||''):d.toLocaleDateString('pt-PT');
+    var row=document.createElement('div'); row.className='hh-row';
+    row.innerHTML='<div class="hh-info"><b>'+esc(o.vendedor||'\u2014')+'</b> \u00B7 '+esc(ds)+'<div class="hh-sub">\u{1F91D} '+(o.atend||0)+' \u00B7 \u{1F310} '+(o.online||0)+' \u00B7 \u{1F9F4} '+(o.sprays||0)+' \u00B7 \u{1F39F}\uFE0F '+(o.szclub||0)+' \u00B7 '+euro(o.valor||0)+'</div></div>'+
+      '<div class="hh-acts"><button class="hh-print">\u{1F5A8}\uFE0F Imprimir</button><button class="hh-del">\u2715 Apagar</button></div>';
+    row.querySelector('.hh-print').onclick=function(){ imprimirObj(o); };
+    row.querySelector('.hh-del').onclick=function(){ apagarHH(o.id); };
+    l.appendChild(row);
+  });
+}
+function apagarHH(id){
+  if(!confirm('Apagar esta happy hour do hist\u00F3rico?')) return;
+  fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'nota_del', id:id})})
+    .then(r=>r.json()).then(function(){ HH=HH.filter(x=>String(x.id)!==String(id)); renderHH(); })
+    .catch(function(){ alert('N\u00E3o foi poss\u00EDvel apagar.'); });
+}
+document.getElementById('btnHistView').addEventListener('click',function(){ document.body.classList.add('hh-hist'); window.scrollTo(0,0); carregarHH(); });
+document.getElementById('histBack').addEventListener('click',function(){ document.body.classList.remove('hh-hist'); });
 
 pinta();
 </script>
