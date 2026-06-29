@@ -19,7 +19,9 @@
       var cur=sel.value;
       sel.innerHTML='';
       var ph=document.createElement('option'); ph.value=''; ph.textContent=opts.placeholder||'\u2014 Seleciona o nome \u2014'; sel.appendChild(ph);
+      var areas = opts.area ? String(opts.area).split(',') : null;  // limitar a area(s), ex: 'sup'
       roster.forEach(function(g){
+        if(areas && areas.indexOf(g.id)<0) return;
         var og=document.createElement('optgroup'); og.label=AREAS[g.id]||g.id;
         (g.nomes||[]).forEach(function(nm){ var o=document.createElement('option'); o.value=nm; o.textContent=nm; og.appendChild(o); });
         sel.appendChild(og);
@@ -27,8 +29,8 @@
       if(cur){ try{ sel.value=cur; }catch(e){} }
     });
   };
-  /* preenche automaticamente qualquer <select data-staff> (placeholder via data-ph) */
-  function init(root){ (root||document).querySelectorAll('select[data-staff]').forEach(function(sel){ if(!sel.dataset._szdone){ sel.dataset._szdone='1'; window.SZfillStaff(sel,{placeholder:sel.getAttribute('data-ph')||''}); } }); }
+  /* preenche automaticamente qualquer <select data-staff> (placeholder via data-ph; area opcional via data-area) */
+  function init(root){ (root||document).querySelectorAll('select[data-staff]').forEach(function(sel){ if(!sel.dataset._szdone){ sel.dataset._szdone='1'; window.SZfillStaff(sel,{placeholder:sel.getAttribute('data-ph')||'', area:sel.getAttribute('data-area')||''}); } }); }
   window.SZinitStaff=init;
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',function(){init();});
 })();
