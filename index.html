@@ -54,6 +54,18 @@
   .tile-badge{position:absolute;top:-7px;right:-7px;min-width:24px;height:24px;padding:0 6px;background:#e11d2b;color:#fff;border-radius:999px;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff;animation:tilesalta 1.4s ease-in-out infinite;transform-origin:center;}
   @keyframes tilesalta{0%,60%,100%{transform:translateY(0);}15%{transform:translateY(-7px);}30%{transform:translateY(0);}45%{transform:translateY(-3px);}}
 
+  /* Pesquisa global */
+  .search-wrap{margin:14px 0 2px;}
+  #searchBox{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink);box-shadow:var(--shadow);}
+  #searchBox:focus{outline:none;border-color:var(--accent);}
+  .section.hidden,.tile.hidden{display:none !important;}
+  #noResults{display:none;text-align:center;color:var(--muted);font-size:14px;padding:30px 10px;}
+  /* Aniversarios */
+  #bdayBanner .bday{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#FF8100,#E66200);color:#fff;border-radius:16px;padding:14px 16px;margin:14px 0 2px;box-shadow:0 4px 16px rgba(230,98,0,.3);}
+  #bdayBanner .bday .ic{font-size:28px;flex:none;}
+  #bdayBanner .bday .txt{flex:1;min-width:0;font-size:14.5px;line-height:1.35;font-weight:700;}
+  #bdayBanner .bday .txt b{font-weight:800;}
+
   footer{text-align:center;color:var(--muted);font-size:11px;margin-top:24px;}
 
   /* PIN gate */
@@ -115,7 +127,10 @@
 </header>
 
 <main>
+  <div id="bdayBanner"></div>
+  <div class="search-wrap"><input type="search" id="searchBox" placeholder="&#x1F50E; Procurar formul&#xE1;rio, gui&#xE3;o ou imprim&#xED;vel&#x2026;" autocomplete="off"></div>
   <div id="portal"></div>
+  <div id="noResults">Nada encontrado. Tenta outra palavra.</div>
   <footer>Sport Zone &#xB7; Vasco da Gama &#x2014; Portal de Gest&#xE3;o de Loja</footer>
   <div class="page-legal"><b>Aplica&#xE7;&#xE3;o n&#xE3;o oficial</b>Projeto independente de apoio &#xE0; equipa. N&#xE3;o &#xE9; uma aplica&#xE7;&#xE3;o institucional nem afiliada &#xE0; empresa. Em caso de diverg&#xEA;ncia, prevalecem sempre as comunica&#xE7;&#xF5;es e procedimentos oficiais da empresa.</div>
 </main>
@@ -125,9 +140,11 @@
 
 const SECTIONS = [
   { t:'Aplica\u00E7\u00F5es', app:true, items:[
-    {k:'lembretes', ic:'\uD83D\uDCCC', nm:'Lembretes'},
-    {k:'contagem',  ic:'\uD83D\uDCB6', nm:'Contagem de Dinheiro'},
-    {k:'superliga', ic:'\uD83C\uDFC6', nm:'Super Liga'}
+    {k:'lembretes',          ic:'\uD83D\uDCCC', nm:'Lembretes'},
+    {k:'checklist_abertura', ic:'\uD83D\uDD13', nm:'Checklist Abertura'},
+    {k:'checklist_fecho',    ic:'\uD83D\uDD12', nm:'Checklist Fecho'},
+    {k:'contagem',           ic:'\uD83D\uDCB6', nm:'Contagem de Dinheiro'},
+    {k:'superliga',          ic:'\uD83C\uDFC6', nm:'Super Liga'}
   ]},
   { t:'Plano Formativo Interno', items:[
     {k:'pf_atendimento',  ic:'\uD83E\uDD1D', nm:'Atendimento ao cliente'},
@@ -141,6 +158,7 @@ const SECTIONS = [
   { t:'Formul\u00E1rios', items:[
     {k:'happyhour',         ic:'\uD83D\uDCB0', nm:'Happy Hour'},
     {k:'limpeza',           ic:'\uD83E\uDDF9', nm:'Checklist de Loja'},
+    {k:'alarmado',          ic:'\uD83C\uDFF7\uFE0F', nm:'Alarmado'},
     {k:'admissao',          ic:'\uD83D\uDCDD', nm:'Pedido de Admiss\u00E3o'},
     {k:'avaliacoes',        ic:'\u2B50', nm:'Avalia\u00E7\u00F5es'},
     {k:'atendimento_loja',  ic:'\uD83D\uDECD\uFE0F', nm:'Atendimento Loja'},
@@ -150,7 +168,7 @@ const SECTIONS = [
     {k:'satisfacao_staff',  ic:'\uD83D\uDE0A', nm:'Satisfa\u00E7\u00E3o Staff'},
     {k:'ferias',            ic:'\uD83C\uDFD6\uFE0F', nm:'Pedido de F\u00E9rias'}
   ]},
-  { t:'Templates', items:[
+  { t:'Imprim\u00EDveis', items:[
     {k:'sinaletica',      ic:'\uD83E\uDEA7', nm:'Sinal\u00E9tica'},
     {k:'alarmes',         ic:'\uD83D\uDEA8', nm:'Alarmes'},
     {k:'entradas_saidas', ic:'\uD83D\uDC64', nm:'Registo de Funcion\u00E1rio'},
@@ -191,7 +209,7 @@ function render(){
         tile.addEventListener('click',function(){ alert('"'+it.nm+'" ainda n\u00E3o est\u00E1 configurado.\nEm breve!'); });
       }
       tile.dataset.key=it.k;
-      if(it.k==='lembretes') tile.classList.add('wide');
+      tile.dataset.name=it.nm;
       const ic=document.createElement('div'); ic.className='ic'; ic.textContent=it.ic; tile.appendChild(ic);
       const nm=document.createElement('div'); nm.className='nm'; nm.textContent=it.nm; tile.appendChild(nm);
       g.appendChild(tile);
@@ -210,6 +228,55 @@ function updateNotifLembretes(){
 }
 render();
 updateNotifLembretes();
+
+/* ---------- Pesquisa global ---------- */
+function norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036F]/g,''); }
+(function(){
+  var box=document.getElementById('searchBox'); if(!box) return;
+  box.addEventListener('input',function(){
+    var q=norm(box.value.trim());
+    var anyTile=false;
+    document.querySelectorAll('.section').forEach(function(sec){
+      var visivel=0;
+      sec.querySelectorAll('.tile').forEach(function(t){
+        var match = !q || norm(t.dataset.name).indexOf(q)>=0;
+        t.classList.toggle('hidden', !match);
+        if(match) visivel++;
+      });
+      sec.classList.toggle('hidden', visivel===0);
+      if(visivel>0) anyTile=true;
+    });
+    document.getElementById('noResults').style.display = (q && !anyTile) ? 'block' : 'none';
+  });
+})();
+
+/* ---------- Aniversarios de hoje ---------- */
+function bdayParts(s){
+  s=String(s||''); if(s.charAt(0)==='@') s=s.slice(1);
+  var m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return {mo:+m[2]-1, d:+m[3]};
+  var dt=new Date(s); if(!isNaN(dt.getTime())) return {mo:dt.getMonth(), d:dt.getDate()};
+  return null;
+}
+function checkBirthdays(){
+  var B=(window.BACKEND_URL?String(window.BACKEND_URL).trim():''); if(!B) return;
+  fetch(B+'?action=notas&t='+Date.now()).then(function(r){return r.json();}).then(function(j){
+    if(!j||!j.ok||!Array.isArray(j.notas)) return;
+    var hoje=new Date(); var hm=hoje.getMonth(), hd=hoje.getDate();
+    var nomes=[];
+    j.notas.forEach(function(n){
+      if(String(n.seccao)!=='_aniversario') return;
+      var p=bdayParts(n.texto); if(p && p.mo===hm && p.d===hd){ nomes.push(String(n.autor||'').trim()); }
+    });
+    if(!nomes.length) return;
+    var txt;
+    if(nomes.length===1){ txt='Hoje <b>'+nomes[0]+'</b> faz anos. N\u00E3o te esque\u00E7as de dar os parab\u00E9ns!'; }
+    else{ txt='Hoje fazem anos: <b>'+nomes.join('</b>, <b>')+'</b>. N\u00E3o te esque\u00E7as de dar os parab\u00E9ns!'; }
+    var box=document.getElementById('bdayBanner');
+    box.innerHTML='<div class="bday"><span class="ic">\uD83C\uDF82</span><span class="txt">'+txt+'</span></div>';
+  }).catch(function(){});
+}
+checkBirthdays();
 
 /* PIN gate */
 (function(){
