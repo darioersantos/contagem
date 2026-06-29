@@ -46,6 +46,6 @@ window.PORTAL_LINKS = {
 
   /* ---- Outros ---- */
   passwords:         "",
-  competencias:      ""
+  competencias:      "competencias.html"
 
 };
