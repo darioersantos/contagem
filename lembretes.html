@@ -226,7 +226,7 @@ function carregar(){
   fetch(BACKEND+'?action=notas&t='+Date.now())
     .then(r=>r.json()).then(function(j){
       if(j&&j.ok&&Array.isArray(j.notas)){
-        NOTAS=j.notas.filter(function(n){return String(n.seccao)!=='_aniversario' && String(n.seccao)!=='_comentario' && String(n.seccao)!=='_cofrehist';});
+        NOTAS=j.notas.filter(function(n){return String(n.seccao)!=='_aniversario' && String(n.seccao)!=='_comentario' && String(n.seccao)!=='_cofrehist' && String(n.seccao)!=='_hhhist' && String(n.seccao)!=='_pfhist';});
         COMENTARIOS=j.notas.filter(function(n){return String(n.seccao)==='_comentario';}).map(function(n){ var raw=String(n.texto||''); var i=raw.indexOf(COMENTSEP); return {id:n.id, parent:i>=0?raw.slice(0,i):'', texto:i>=0?raw.slice(i+COMENTSEP.length):raw, autor:n.autor, data:n.data}; });
         render();
       }
