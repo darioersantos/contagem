@@ -225,6 +225,7 @@ function addValor(sign){
   feedbackClick();
   st.valor=Math.max(0, Math.round(((st.valor||0)+sign*a)*100)/100);
   document.getElementById('v-valor').textContent=euro(st.valor);
+  document.getElementById('valAmount').value='';
   save();
 }
 document.getElementById('valPlus').addEventListener('click',function(){ addValor(1); });
@@ -244,11 +245,11 @@ function imprimirObj(o){
     '<tr><td class="k">Data</td><td class="v">'+esc(ds)+'</td></tr>'+
     '</tbody></table>';
   html+='<h2>Resultados</h2><table class="res"><tbody>'+
-    '<tr><td>\u{1F91D} Atendimentos</td><td class="n">'+(o.atend||0)+'</td></tr>'+
-    '<tr><td>\u{1F310} Online</td><td class="n">'+(o.online||0)+'</td></tr>'+
-    '<tr><td>\u{1F9F4} Sprays</td><td class="n">'+(o.sprays||0)+'</td></tr>'+
-    '<tr><td>\u{1F39F}\uFE0F SZ Club</td><td class="n">'+(o.szclub||0)+'</td></tr>'+
-    '<tr class="tot"><td>\u{1F4B6} Valor das vendas</td><td class="n">'+euro(o.valor||0)+'</td></tr>'+
+    '<tr><td>\uD83E\uDD1D Atendimentos</td><td class="n">'+(o.atend||0)+'</td></tr>'+
+    '<tr><td>\uD83C\uDF10 Online</td><td class="n">'+(o.online||0)+'</td></tr>'+
+    '<tr><td>\uD83E\uDDF4 Sprays</td><td class="n">'+(o.sprays||0)+'</td></tr>'+
+    '<tr><td>\uD83C\uDF9F\uFE0F SZ Club</td><td class="n">'+(o.szclub||0)+'</td></tr>'+
+    '<tr class="tot"><td>\uD83D\uDCB6 Valor das vendas</td><td class="n">'+euro(o.valor||0)+'</td></tr>'+
     '</tbody></table>';
   document.getElementById('printArea').innerHTML=html;
   setTimeout(function(){ window.print(); },120);
@@ -289,8 +290,8 @@ function renderHH(){
   HH.forEach(function(o){
     var d=new Date((o.data||'')+'T00:00:00'); var ds=isNaN(d)?(o.data||''):d.toLocaleDateString('pt-PT');
     var row=document.createElement('div'); row.className='hh-row';
-    row.innerHTML='<div class="hh-info"><b>'+esc(o.vendedor||'\u2014')+'</b> \u00B7 '+esc(ds)+'<div class="hh-sub">\u{1F91D} '+(o.atend||0)+' \u00B7 \u{1F310} '+(o.online||0)+' \u00B7 \u{1F9F4} '+(o.sprays||0)+' \u00B7 \u{1F39F}\uFE0F '+(o.szclub||0)+' \u00B7 '+euro(o.valor||0)+'</div></div>'+
-      '<div class="hh-acts"><button class="hh-print">\u{1F5A8}\uFE0F Imprimir</button><button class="hh-del">\u2715 Apagar</button></div>';
+    row.innerHTML='<div class="hh-info"><b>'+esc(o.vendedor||'\u2014')+'</b> \u00B7 '+esc(ds)+'<div class="hh-sub">\uD83E\uDD1D '+(o.atend||0)+' \u00B7 \uD83C\uDF10 '+(o.online||0)+' \u00B7 \uD83E\uDDF4 '+(o.sprays||0)+' \u00B7 \uD83C\uDF9F\uFE0F '+(o.szclub||0)+' \u00B7 '+euro(o.valor||0)+'</div></div>'+
+      '<div class="hh-acts"><button class="hh-print">\uD83D\uDDA8\uFE0F Imprimir</button><button class="hh-del">\u2715 Apagar</button></div>';
     row.querySelector('.hh-print').onclick=function(){ imprimirObj(o); };
     row.querySelector('.hh-del').onclick=function(){ apagarHH(o.id); };
     l.appendChild(row);
