@@ -26,9 +26,10 @@ window.PORTAL_LINKS = {
   /* ---- Formularios ---- */
   happyhour:         "happyhour.html",
   limpeza:           "limpeza.html",
+  alarmado:          "alarmado.html",
   admissao:          "https://forms.gle/ooh9dxriXekfDVUU8",
   avaliacoes:        "avaliacoes.html",
-  atendimento_loja:  "",
+  atendimento_loja:  "atendimento_loja.html",
   atendimento_caixa: "",
   aniversario:       "aniversario.html",
   limitacoes_horario:"",
@@ -45,6 +46,7 @@ window.PORTAL_LINKS = {
   pf_provadores:     "",
 
   /* ---- Outros ---- */
+  caderno:           "caderno.html",
   passwords:         "",
   competencias:      "competencias.html"
 
