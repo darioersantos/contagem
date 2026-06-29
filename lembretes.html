@@ -147,12 +147,12 @@ const BACKEND=(typeof window!=='undefined'&&window.BACKEND_URL?String(window.BAC
 const IMGSEP='||IMG||';
 const COMENTSEP='@@';
 const SECS=[
-  {k:'geral',     nm:'Geral',     ic:'\u{1F4CB}'},
-  {k:'calcado',   nm:'Cal\u00E7ado',   ic:'\u{1F45F}'},
-  {k:'textil',    nm:'T\u00EAxtil',    ic:'\u{1F455}'},
-  {k:'visual',    nm:'Visual',    ic:'\u{1F5BC}\uFE0F'},
-  {k:'caixa',     nm:'Caixa',     ic:'\u{1F9FE}'},
-  {k:'logistica', nm:'Log\u00EDstica', ic:'\u{1F4E6}'}
+  {k:'geral',     nm:'Geral',     ic:'\uD83D\uDCCB'},
+  {k:'calcado',   nm:'Cal\u00E7ado',   ic:'\uD83D\uDC5F'},
+  {k:'textil',    nm:'T\u00EAxtil',    ic:'\uD83D\uDC55'},
+  {k:'visual',    nm:'Visual',    ic:'\uD83D\uDDBC\uFE0F'},
+  {k:'caixa',     nm:'Caixa',     ic:'\uD83E\uDDFE'},
+  {k:'logistica', nm:'Log\u00EDstica', ic:'\uD83D\uDCE6'}
 ];
 let NOTAS=[];
 let COMENTARIOS=[];
@@ -186,7 +186,7 @@ function render(){
       const txt=parteTexto(n.texto), img=parteFoto(n.texto);
       const coms=COMENTARIOS.filter(function(x){return x.parent===String(n.id);}).sort(function(a,b){return new Date(a.data)-new Date(b.data);});
       let comsHtml='';
-      coms.forEach(function(cm){ comsHtml+='<div class="com"><span class="com-t">'+esc(cm.texto)+'</span><span class="com-m">\u{1F4AC} '+(cm.autor?esc(cm.autor)+' \u00B7 ':'')+fmtData(cm.data)+' <button class="com-del" data-id="'+esc(cm.id)+'">\u2715</button></span></div>'; });
+      coms.forEach(function(cm){ comsHtml+='<div class="com"><span class="com-t">'+esc(cm.texto)+'</span><span class="com-m">\uD83D\uDCAC '+(cm.autor?esc(cm.autor)+' \u00B7 ':'')+fmtData(cm.data)+' <button class="com-del" data-id="'+esc(cm.id)+'">\u2715</button></span></div>'; });
       const c=document.createElement('div'); c.className='note'+(done?' done':'');
       c.innerHTML=(done?'<span class="feito">\u2713 Conclu\u00EDdo</span><br>':'')+
         (txt?'<div class="txt">'+esc(txt)+'</div>':'')+
@@ -194,7 +194,7 @@ function render(){
         '<div class="meta"><b>'+esc(n.autor||'\u2014')+'</b> \u00B7 '+fmtData(n.data)+
         '<span class="acts">'+
           '<button class="concluir">'+(done?'\u21A9 Reabrir':'\u2713 Concluir')+'</button>'+
-          '<button class="comentar">\u{1F4AC} Comentar</button>'+
+          '<button class="comentar">\uD83D\uDCAC Comentar</button>'+
           '<button class="del">\u2715 Apagar</button>'+
         '</span></div>'+
         '<div class="coments">'+comsHtml+'</div>'+
@@ -213,7 +213,7 @@ function render(){
     });
     l.appendChild(grp);
   });
-  if(!any){ l.innerHTML='<div class="empty">Sem lembretes. Escreve o primeiro acima \u{1F446}</div>'; }
+  if(!any){ l.innerHTML='<div class="empty">Sem lembretes. Escreve o primeiro acima \uD83D\uDC46</div>'; }
   atualizarBadge();
   if(window.SZinitStaff) SZinitStaff();
 }
@@ -229,7 +229,7 @@ function carregar(){
   fetch(BACKEND+'?action=notas&t='+Date.now())
     .then(r=>r.json()).then(function(j){
       if(j&&j.ok&&Array.isArray(j.notas)){
-        NOTAS=j.notas.filter(function(n){return String(n.seccao)!=='_aniversario' && String(n.seccao)!=='_comentario' && String(n.seccao)!=='_cofrehist' && String(n.seccao)!=='_hhhist' && String(n.seccao)!=='_pfhist' && String(n.seccao)!=='_comp';});
+        NOTAS=j.notas.filter(function(n){return String(n.seccao).charAt(0)!=='_';});
         COMENTARIOS=j.notas.filter(function(n){return String(n.seccao)==='_comentario';}).map(function(n){ var raw=String(n.texto||''); var i=raw.indexOf(COMENTSEP); return {id:n.id, parent:i>=0?raw.slice(0,i):'', texto:i>=0?raw.slice(i+COMENTSEP.length):raw, autor:n.autor, data:n.data}; });
         render();
       }
@@ -282,7 +282,7 @@ function imprimir(){
     });
     html+='</ul>';
   });
-  if(!total){ html+='<p>N\u00E3o h\u00E1 tarefas por fazer \u{1F389}</p>'; }
+  if(!total){ html+='<p>N\u00E3o h\u00E1 tarefas por fazer \uD83C\uDF89</p>'; }
   document.getElementById('printArea').innerHTML=html;
   window.print();
 }
