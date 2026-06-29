@@ -38,7 +38,7 @@
   header{
     position:sticky;top:0;z-index:50;
     background:linear-gradient(135deg,#FF8100,#E66200);
-    color:#fff;padding:14px 16px 12px;
+    color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 12px;
     box-shadow:0 2px 12px rgba(230,98,0,.28);
   }
   .h-top{display:flex;align-items:center;gap:12px;justify-content:space-between;}
