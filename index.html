@@ -203,7 +203,7 @@ function updateNotifLembretes(){
   var B=(window.BACKEND_URL?String(window.BACKEND_URL).trim():''); if(!B) return;
   fetch(B+'?action=notas&t='+Date.now()).then(function(r){return r.json();}).then(function(j){
     if(!j||!j.ok||!Array.isArray(j.notas)) return;
-    var n=j.notas.filter(function(x){return String(x.seccao)!=='_aniversario' && String(x.seccao)!=='_comentario' && String(x.seccao)!=='_cofrehist' && String(x.seccao)!=='_hhhist' && !(x.done===true||String(x.done).toLowerCase()==='true');}).length;
+    var n=j.notas.filter(function(x){return String(x.seccao)!=='_aniversario' && String(x.seccao)!=='_comentario' && String(x.seccao)!=='_cofrehist' && String(x.seccao)!=='_hhhist' && String(x.seccao)!=='_pfhist' && !(x.done===true||String(x.done).toLowerCase()==='true');}).length;
     var tile=document.querySelector('.tile[data-key="lembretes"]');
     if(tile && n>0){ var b=document.createElement('span'); b.className='tile-badge'; b.textContent=n>99?'99+':n; tile.appendChild(b); }
   }).catch(function(){});
