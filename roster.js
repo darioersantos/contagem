@@ -4,7 +4,7 @@
    (action=getRoster) e ficam em cache na sessao para nao repetir pedidos. */
 (function(){
   var ROSTER_URL='https://script.google.com/macros/s/AKfycbxztRKM-1SdK2PYfVrBQgbelxyDb3FYFMDgG9sWzbWOw9cdJL26G37Ui0jT1ltXZsk9/exec';
-  var AREAS={calcado:'Cal\u00E7ado',caixa:'Caixa',textil:'T\u00EAxtil',logistica:'Log\u00EDstica',sup:'Supervis\u00E3o',estagios:'Est\u00E1gios',visual:'Visual'};
+  var AREAS={calcado:'Cal\u00E7ado',caixa:'Caixa',textil:'T\u00EAxtil',logistica:'Log\u00EDstica',sup:'Dire\u00E7\u00E3o',estagios:'Est\u00E1gios',visual:'Visual'};
   function get(cb){
     try{ var c=sessionStorage.getItem('sl_roster'); if(c){ cb(JSON.parse(c)); return; } }catch(e){}
     fetch(ROSTER_URL+'?action=getRoster&t='+Date.now(),{cache:'no-store'})
