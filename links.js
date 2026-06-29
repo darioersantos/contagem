@@ -35,6 +35,15 @@ window.PORTAL_LINKS = {
   satisfacao_staff:  "",
   ferias:            "",
 
+  /* ---- Plano Formativo (em breve) ---- */
+  pf_atendimento:    "",
+  pf_szclub:         "",
+  pf_onlines:        "",
+  pf_sprays:         "",
+  pf_palmilhas:      "",
+  pf_entrada:        "",
+  pf_provadores:     "",
+
   /* ---- Outros ---- */
   passwords:         "",
   competencias:      ""
