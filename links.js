@@ -40,7 +40,7 @@ window.PORTAL_LINKS = {
   pf_szclub:         "",
   pf_onlines:        "",
   pf_sprays:         "",
-  pf_palmilhas:      "",
+  pf_palmilhas:      "palmilhas.html",
   pf_entrada:        "",
   pf_provadores:     "",
 
