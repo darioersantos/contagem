@@ -27,7 +27,7 @@ window.PORTAL_LINKS = {
   happyhour:         "happyhour.html",
   limpeza:           "limpeza.html",
   admissao:          "https://forms.gle/ooh9dxriXekfDVUU8",
-  avaliacoes:        "",
+  avaliacoes:        "avaliacoes.html",
   atendimento_loja:  "",
   atendimento_caixa: "",
   aniversario:       "aniversario.html",
