@@ -67,6 +67,11 @@
   #evalBanner .evalrem .ic svg{width:26px;height:26px;stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;}
   #evalBanner .evalrem .txt{flex:1;min-width:0;font-size:14px;line-height:1.35;font-weight:600;}
   #evalBanner .evalrem .txt b{font-weight:800;color:#ffb45e;}
+  #taskBanner .taskrem{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#FF8100,#E66200);color:#fff;border-radius:16px;padding:14px 16px;margin:14px 0 2px;text-decoration:none;box-shadow:0 4px 16px rgba(230,98,0,.3);}
+  #taskBanner .taskrem .ic{line-height:0;color:#fff;flex:none;}
+  #taskBanner .taskrem .ic svg{width:26px;height:26px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  #taskBanner .taskrem .txt{flex:1;min-width:0;font-size:14px;line-height:1.35;font-weight:700;}
+  #taskBanner .taskrem .txt b{font-weight:800;}
   .tile .soon-tag{position:absolute;top:7px;right:7px;background:#efe9e0;color:#9a8f7d;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;}
   .tile.app{background:linear-gradient(135deg,#FF8100,#E66200);color:#fff;border:none;box-shadow:0 4px 16px rgba(230,98,0,.3);}
   .tile.app .nm{color:#fff;}
@@ -148,6 +153,7 @@
 <main>
   <div id="bdayBanner"></div>
   <div id="evalBanner"></div>
+  <div id="taskBanner"></div>
   <div class="search-wrap"><input type="search" id="searchBox" placeholder="&#x1F50E; Procurar formul&#xE1;rio, gui&#xE3;o ou imprim&#xED;vel&#x2026;" autocomplete="off"></div>
   <div id="portal"><div class="section"><div class="sk-grid"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div></div>
   <div id="noResults">Nada encontrado. Tenta outra palavra.</div>
@@ -187,6 +193,11 @@ const SECTIONS = [
     {k:'satisfacao_staff',   ic:'smile',         nm:'Satisfa\u00E7\u00E3o Staff'},
     {k:'ferias',             ic:'umbrella',      nm:'Pedido de F\u00E9rias'}
   ]},
+  { t:'Outros', items:[
+    {k:'caderno',      ic:'book-open',   nm:'Caderno de Acompanhamento'},
+    {k:'passwords',    ic:'key-round',   nm:'Lista de Passwords'},
+    {k:'competencias', ic:'bar-chart-3', nm:'Mapa de Compet\u00EAncias'}
+  ]},
   { t:'Imprim\u00EDveis', items:[
     {k:'sinaletica',      ic:'signpost',       nm:'Sinal\u00E9tica'},
     {k:'alarmes',         ic:'siren',          nm:'Alarmes'},
@@ -197,11 +208,6 @@ const SECTIONS = [
     {k:'vdl',             ic:'package',        nm:'VDL'},
     {k:'folha_reserva',   ic:'clipboard',      nm:'Folha Reserva'},
     {k:'folha_elogio',    ic:'award',          nm:'Folha de Elogio'}
-  ]},
-  { t:'Outros', items:[
-    {k:'caderno',      ic:'book-open',   nm:'Caderno de Acompanhamento'},
-    {k:'passwords',    ic:'key-round',   nm:'Lista de Passwords'},
-    {k:'competencias', ic:'bar-chart-3', nm:'Mapa de Compet\u00EAncias'}
   ]}
 ];
 
@@ -249,6 +255,12 @@ function updateNotifLembretes(){
     var n=j.notas.filter(function(x){return String(x.seccao).charAt(0)!=='_' && !(x.done===true||String(x.done).toLowerCase()==='true');}).length;
     var tile=document.querySelector('.tile[data-key="lembretes"]');
     if(tile && n>0){ var b=document.createElement('span'); b.className='tile-badge'; b.textContent=n>99?'99+':n; tile.appendChild(b); }
+    var tb=document.getElementById('taskBanner');
+    if(tb && n>0){
+      var url=(window.PORTAL_LINKS&&window.PORTAL_LINKS['lembretes'])?window.PORTAL_LINKS['lembretes']:'lembretes.html';
+      var txt = n===1 ? 'Tens <b>1 tarefa</b> por concluir.' : ('Tens <b>'+n+' tarefas</b> por concluir.');
+      tb.innerHTML='<a class="taskrem" href="'+url+'"><span class="ic">'+svgIcon('list-checks')+'</span><span class="txt">'+txt+' Toca para veres.</span></a>';
+    }
   }).catch(function(){});
 }
 render();
