@@ -40,6 +40,7 @@
   .field textarea{min-height:90px;resize:vertical;}
   #feedback{min-height:150px;}
   .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);}
+  .field input[type=date]{-webkit-appearance:none;appearance:none;max-width:100%;min-width:0;}
 
   .intro{font-size:13px;color:var(--muted);margin:2px 2px 0;}
   .sec-h{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-dark);font-weight:800;margin:18px 3px 2px;}
@@ -166,9 +167,6 @@
     </div>
   </div>
 
-  <div class="card total-card">
-    <div class="trow"><span>Respondidas</span><b id="tTot">0 / 9</b></div>
-  </div>
 
   <div class="card">
     <label class="declara"><input type="checkbox" id="declaro"><span>Declaro que fui avaliado/a e tomei conhecimento desta avalia&#xE7;&#xE3;o.</span></label>
@@ -271,7 +269,7 @@ function construir(){
   });
 }
 function nRespondidas(d){ var n=0; QUESTOES.forEach(function(p){ var a=d.ans&&d.ans[p.k]; if(p.t==='multi'){ if(Array.isArray(a)&&a.length) n++; } else if(a){ n++; } }); return n; }
-function totais(){ document.getElementById('tTot').textContent=nRespondidas(st)+' / '+NQ; }
+function totais(){ var el=document.getElementById('tTot'); if(el) el.textContent=nRespondidas(st)+' / '+NQ; }
 
 function pinta(){
   document.getElementById('colaborador').value=st.colaborador||'';
