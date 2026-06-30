@@ -8,6 +8,7 @@
 window.PORTAL_LINKS = {
 
   /* ---- Aplicacoes ---- */
+  mural:     "mural.html",
   superliga: "http://manager9yc.github.io/superliga/",
   contagem:  "cofre.html",
   lembretes: "lembretes.html",
@@ -47,6 +48,8 @@ window.PORTAL_LINKS = {
   pf_provadores:     "",
 
   /* ---- Outros ---- */
+  atas:              "atas.html",
+  pontualidade:      "pontualidade.html",
   caderno:           "caderno.html",
   passwords:         "",
   competencias:      "competencias.html"
