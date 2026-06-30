@@ -149,12 +149,12 @@ const BACKEND=(typeof window!=='undefined'&&window.BACKEND_URL?String(window.BAC
 const IMGSEP='||IMG||';
 const COMENTSEP='@@';
 const SECS=[
-  {k:'geral',     nm:'Geral',     ic:'\uD83D\uDCCB'},
-  {k:'calcado',   nm:'Cal\u00E7ado',   ic:'\uD83D\uDC5F'},
-  {k:'textil',    nm:'T\u00EAxtil',    ic:'\uD83D\uDC55'},
-  {k:'visual',    nm:'Visual',    ic:'\uD83D\uDDBC\uFE0F'},
-  {k:'caixa',     nm:'Caixa',     ic:'\uD83E\uDDFE'},
-  {k:'logistica', nm:'Log\u00EDstica', ic:'\uD83D\uDCE6'}
+  {k:'geral',     nm:'Geral',     lu:'clipboard-list'},
+  {k:'calcado',   nm:'Cal\u00E7ado',   lu:'footprints'},
+  {k:'textil',    nm:'T\u00EAxtil',    lu:'shirt'},
+  {k:'visual',    nm:'Visual',    lu:'image'},
+  {k:'caixa',     nm:'Caixa',     lu:'receipt'},
+  {k:'logistica', nm:'Log\u00EDstica', lu:'package'}
 ];
 let NOTAS=[];
 let COMENTARIOS=[];
@@ -171,7 +171,7 @@ function parteFoto(raw){ raw=semBy(raw); var i=raw.indexOf(IMGSEP); return i>=0?
 
 function preencherSeccoes(){
   const sel=document.getElementById('seccao'); sel.innerHTML='';
-  SECS.forEach(function(s){ const o=document.createElement('option'); o.value=s.k; o.textContent=s.ic+' '+s.nm; sel.appendChild(o); });
+  SECS.forEach(function(s){ const o=document.createElement('option'); o.value=s.k; o.textContent=s.nm; sel.appendChild(o); });
 }
 
 function render(){
@@ -184,22 +184,22 @@ function render(){
     itens.sort(function(a,b){ const da=isDone(a),db=isDone(b); if(da!==db) return da?1:-1; return new Date(b.data)-new Date(a.data); });
     const grp=document.createElement('div'); grp.className='grp';
     const porFazer=itens.filter(n=>!isDone(n)).length;
-    grp.innerHTML='<div class="grp-h">'+s.ic+' '+esc(s.nm)+' <span class="grp-c">'+porFazer+' por fazer</span></div>';
+    grp.innerHTML='<div class="grp-h"><i data-lu="'+s.lu+'" data-sz="16"></i> '+esc(s.nm)+' <span class="grp-c">'+porFazer+' por fazer</span></div>';
     itens.forEach(function(n){
       const done=isDone(n);
       const txt=parteTexto(n.texto), img=parteFoto(n.texto), criador=parteBy(n.texto);
       const coms=COMENTARIOS.filter(function(x){return x.parent===String(n.id);}).sort(function(a,b){return new Date(a.data)-new Date(b.data);});
       let comsHtml='';
-      coms.forEach(function(cm){ comsHtml+='<div class="com"><span class="com-t">'+esc(cm.texto)+'</span><span class="com-m">\uD83D\uDCAC '+(cm.autor?esc(cm.autor)+' \u00B7 ':'')+fmtData(cm.data)+' <button class="com-del" data-id="'+esc(cm.id)+'">\u2715</button></span></div>'; });
+      coms.forEach(function(cm){ comsHtml+='<div class="com"><span class="com-t">'+esc(cm.texto)+'</span><span class="com-m"><i data-lu="message-circle" data-sz="13"></i> '+(cm.autor?esc(cm.autor)+' \u00B7 ':'')+fmtData(cm.data)+' <button class="com-del" data-id="'+esc(cm.id)+'"><i data-lu="x" data-sz="13"></i></button></span></div>'; });
       const c=document.createElement('div'); c.className='note'+(done?' done':'');
-      c.innerHTML=(done?'<span class="feito">\u2713 Conclu\u00EDdo</span><br>':'')+
+      c.innerHTML=(done?'<span class="feito"><i data-lu="check" data-sz="14"></i> Conclu\u00EDdo</span><br>':'')+
         (txt?'<div class="txt">'+esc(txt)+'</div>':'')+
         (img?'<img class="thumb" alt="foto">':'')+
         '<div class="meta">'+(criador?'\u270D\uFE0F Criada por <b>'+esc(criador)+'</b> \u00B7 ':'')+(n.autor?'\uD83D\uDC64 '+esc(n.autor)+' \u00B7 ':'')+fmtData(n.data)+
         '<span class="acts">'+
-          '<button class="concluir">'+(done?'\u21A9 Reabrir':'\u2713 Concluir')+'</button>'+
-          '<button class="comentar">\uD83D\uDCAC Comentar</button>'+
-          '<button class="del">\u2715 Apagar</button>'+
+          '<button class="concluir">'+(done?'<i data-lu="rotate-ccw" data-sz="14"></i> Reabrir':'<i data-lu="check" data-sz="14"></i> Concluir')+'</button>'+
+          '<button class="comentar"><i data-lu="message-circle" data-sz="14"></i> Comentar</button>'+
+          '<button class="del"><i data-lu="x" data-sz="14"></i> Apagar</button>'+
         '</span></div>'+
         '<div class="coments">'+comsHtml+'</div>'+
         '<div class="cbox" style="display:none">'+
@@ -217,7 +217,7 @@ function render(){
     });
     l.appendChild(grp);
   });
-  if(!any){ l.innerHTML='<div class="empty">Sem tarefas. Escreve a primeira acima \uD83D\uDC46</div>'; }
+  if(!any){ l.innerHTML='<div class="empty">Sem tarefas. Escreve a primeira acima.</div>'; }
   atualizarBadge();
   if(window.SZinitStaff) SZinitStaff();
 }
@@ -278,7 +278,7 @@ function imprimir(){
     const itens=NOTAS.filter(function(n){return n.seccao===s.k && !isDone(n);});
     if(!itens.length) return;
     itens.sort(function(a,b){ return new Date(a.data)-new Date(b.data); });
-    html+='<h2>'+s.ic+' '+esc(s.nm)+'</h2><ul>';
+    html+='<h2>'+esc(s.nm)+'</h2><ul>';
     itens.forEach(function(n){
       total++;
       const t=parteTexto(n.texto).trim() || '(foto)';
