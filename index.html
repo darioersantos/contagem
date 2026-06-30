@@ -79,8 +79,16 @@
   #taskBanner .taskrem .txt{flex:1;min-width:0;font-size:14px;line-height:1.35;font-weight:700;}
   #taskBanner .taskrem .txt b{font-weight:800;}
   @keyframes bannerbounce{0%,55%,100%{transform:translateY(0);}66%{transform:translateY(-6px);}78%{transform:translateY(0);}88%{transform:translateY(-3px);}}
-  #taskBanner .taskrem{animation:bannerbounce 2.4s ease-in-out infinite;}
-  @media (prefers-reduced-motion:reduce){#taskBanner .taskrem{animation:none;}}
+  #taskBanner .taskwidget{margin:14px 0 2px;animation:bannerbounce 2.4s ease-in-out infinite;}
+  #taskBanner .taskwidget .taskrem{margin:0;border-radius:16px 16px 14px 14px;}
+  @media (prefers-reduced-motion:reduce){#taskBanner .taskwidget{animation:none;}}
+  #taskBanner .tasklist{list-style:none;margin:6px 0 0;padding:6px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);}
+  #taskBanner .tasklist li{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;font-size:13.5px;line-height:1.3;color:var(--ink);border-bottom:1px solid var(--line);}
+  #taskBanner .tasklist li:last-child{border-bottom:none;}
+  #taskBanner .tasklist li .d{flex:none;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:6px;}
+  #taskBanner .tasklist li .t{flex:1;min-width:0;font-weight:600;}
+  #taskBanner .tasklist li .t em{font-style:normal;color:var(--muted);font-weight:600;font-size:12px;}
+  #taskBanner .tasklist li.more{color:var(--accent-dark);font-weight:800;justify-content:center;font-size:12.5px;}
   #thuBanner .thurem{display:flex;align-items:center;gap:12px;background:#1a1303;color:#fff;border-radius:16px;padding:14px 16px;margin:14px 0 2px;box-shadow:var(--shadow);}
   #thuBanner .thurem .ic{line-height:0;color:#ffb45e;flex:none;}
   #thuBanner .thurem .ic svg{width:26px;height:26px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;}
@@ -270,14 +278,24 @@ function updateNotifLembretes(){
   var B=(window.BACKEND_URL?String(window.BACKEND_URL).trim():''); if(!B) return;
   fetch(B+'?action=notas&t='+Date.now()).then(function(r){return r.json();}).then(function(j){
     if(!j||!j.ok||!Array.isArray(j.notas)) return;
-    var n=j.notas.filter(function(x){return String(x.seccao).charAt(0)!=='_' && !(x.done===true||String(x.done).toLowerCase()==='true');}).length;
+    function escH(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+    function txtTarefa(raw){ var s=String(raw||'').replace(/^\[\[BY:[^\]]*\]\]/,''); var i=s.indexOf('||IMG||'); return (i>=0?s.slice(0,i):s).trim(); }
+    function byTarefa(raw){ var m=String(raw||'').match(/^\[\[BY:([^\]]*)\]\]/); return m?m[1]:''; }
+    var pend=j.notas.filter(function(x){return String(x.seccao).charAt(0)!=='_' && !(x.done===true||String(x.done).toLowerCase()==='true');});
+    var n=pend.length;
     var tile=document.querySelector('.tile[data-key="lembretes"]');
     if(tile && n>0){ var b=document.createElement('span'); b.className='tile-badge'; b.textContent=n>99?'99+':n; tile.appendChild(b); }
     var tb=document.getElementById('taskBanner');
     if(tb && n>0){
       var url=(window.PORTAL_LINKS&&window.PORTAL_LINKS['lembretes'])?window.PORTAL_LINKS['lembretes']:'lembretes.html';
       var txt = n===1 ? 'Tens <b>1 tarefa</b> por concluir.' : ('Tens <b>'+n+' tarefas</b> por concluir.');
-      tb.innerHTML='<a class="taskrem" href="'+url+'"><span class="ic">'+svgIcon('list-checks')+'</span><span class="txt">'+txt+' Toca para veres.</span></a>';
+      var MAX=8, itens='';
+      pend.slice(0,MAX).forEach(function(x){
+        var t=txtTarefa(x.texto)||'(tarefa)'; var by=byTarefa(x.texto)||x.autor||'';
+        itens+='<li><span class="d"></span><span class="t">'+escH(t)+(by?' <em>\u00B7 '+escH(by)+'</em>':'')+'</span></li>';
+      });
+      if(n>MAX){ itens+='<li class="more">+ '+(n-MAX)+' mais \u2014 toca para veres todas</li>'; }
+      tb.innerHTML='<div class="taskwidget"><a class="taskrem" href="'+url+'"><span class="ic">'+svgIcon('list-checks')+'</span><span class="txt">'+txt+'</span></a><ul class="tasklist">'+itens+'</ul></div>';
     }
   }).catch(function(){});
 }
