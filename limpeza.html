@@ -102,11 +102,11 @@
     </div>
 
     <div class="summary" id="summary">0 tarefas marcadas</div>
-    <button class="submit" id="btnSubmit">&#x2705; Confirmar checklist</button>
+    <button class="submit" id="btnSubmit"><i data-lu="check"></i> Confirmar checklist</button>
   </div>
 
   <div id="ok">
-    <div class="big">&#x2705;</div>
+    <div class="big"><i data-lu="check"></i></div>
     <h2>Checklist registado!</h2>
     <p id="okMsg"></p>
     <div class="btns">
@@ -121,7 +121,7 @@
 const BACKEND=(typeof window!=='undefined'&&window.BACKEND_URL?String(window.BACKEND_URL).trim():'');
 
 const AREAS=[
-  {key:'calcado', nome:'Cal\u00E7ado', icon:'\uD83D\uDC5F', tarefas:[
+  {key:'calcado', nome:'Cal\u00E7ado', lu:'footprints', tarefas:[
     'Arrumar balc\u00E3o Sneaker',
     'Aspirar e limpar o balc\u00E3o',
     'Limpeza do p\u00F3 (light boxes, tri-fisher, prateleiras)',
@@ -132,7 +132,7 @@ const AREAS=[
     'Imprimir senhas',
     'Repor Sprays'
   ]},
-  {key:'textil', nome:'T\u00EAxtil', icon:'\uD83D\uDC55', tarefas:[
+  {key:'textil', nome:'T\u00EAxtil', lu:'shirt', tarefas:[
     'Aspirar laterais por baixo da roupa',
     'Limpar o p\u00F3 de prateleiras e expositores',
     'Aspirar e limpar os 6 provadores',
@@ -141,7 +141,7 @@ const AREAS=[
     'Arrumar cabides (incluindo os de nata\u00E7\u00E3o)',
     'Esvaziar caixotes do lixo'
   ]},
-  {key:'caixa', nome:'Caixa', icon:'\uD83E\uDDFE', tarefas:[
+  {key:'caixa', nome:'Caixa', lu:'receipt', tarefas:[
     'Limpar o balc\u00E3o de caixa',
     'Limpar terminais, teclados e ecr\u00E3s',
     'Aspirar / varrer atr\u00E1s do balc\u00E3o',
@@ -150,7 +150,7 @@ const AREAS=[
     'Verificar reservas',
     'Repor consum\u00EDveis (sacos reutiliz\u00E1veis, rolos)'
   ]},
-  {key:'logistica', nome:'Log\u00EDstica', icon:'\uD83D\uDCE6', tarefas:[
+  {key:'logistica', nome:'Log\u00EDstica', lu:'package', tarefas:[
     'Preencher folha de reposi\u00E7\u00E3o',
     'Identificar caixas do template da empresa',
     'Organizar e limpar o buraco',
@@ -172,7 +172,7 @@ function render(){
       tasks+='<label class="task"><input type="checkbox" data-area="'+a.key+'" data-i="'+i+'"><span class="box"></span><span class="tt">'+esc(t)+'</span></label>';
     });
     card.innerHTML=
-      '<div class="area-head"><span class="area-ic">'+a.icon+'</span><h2>'+esc(a.nome)+'</h2><span class="area-prog" id="prog-'+a.key+'">0/'+a.tarefas.length+'</span></div>'+
+      '<div class="area-head"><span class="area-ic"><i data-lu="'+a.lu+'" data-sz="22"></i></span><h2>'+esc(a.nome)+'</h2><span class="area-prog" id="prog-'+a.key+'">0/'+a.tarefas.length+'</span></div>'+
       '<button class="area-all" data-area="'+a.key+'">Marcar todas</button>'+
       '<div class="tasks">'+tasks+'</div>';
     root.appendChild(card);
@@ -233,12 +233,12 @@ document.getElementById('btnSubmit').addEventListener('click', function(){
         window.scrollTo(0,0);
       }else if(j&&j.ok){
         alert('O envio da limpeza ainda n\u00E3o est\u00E1 ativo no servidor. Avisa o respons\u00E1vel para terminar a configura\u00E7\u00E3o.');
-        btn.disabled=false; btn.textContent='\u2705 Confirmar limpeza';
+        btn.disabled=false; btn.textContent='Confirmar limpeza';
       }else{ throw new Error((j&&j.error)||'erro'); }
     })
     .catch(function(){
       alert('N\u00E3o foi poss\u00EDvel enviar. Verifica a internet e tenta de novo.');
-      btn.disabled=false; btn.textContent='\u2705 Confirmar limpeza';
+      btn.disabled=false; btn.textContent='Confirmar limpeza';
     });
 });
 
