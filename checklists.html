@@ -54,7 +54,14 @@
   .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
   .field input,.field select,.field textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink);}
   .field input:focus,.field textarea:focus{outline:none;border-color:var(--accent);}
-  .field textarea{min-height:74px;resize:vertical;}
+  .field textarea{min-height:130px;resize:vertical;}
+  @media(max-width:560px){.field textarea{min-height:160px;}}
+
+  .periodo-seg{display:flex;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px;margin:6px 0 12px;box-shadow:var(--shadow);}
+  .periodo-seg button{flex:1;border:none;background:transparent;color:var(--muted);border-radius:10px;padding:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;}
+  .periodo-seg button.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(230,98,0,.3);}
+  .periodo-seg button i,.periodo-seg button svg{pointer-events:none;}
+  .area.hide{display:none;}
 
   .summary{margin:18px 2px 0;padding:13px 15px;background:var(--accent-soft);color:var(--accent-ink);border-radius:12px;font-size:14px;font-weight:700;text-align:center;}
 
@@ -90,18 +97,21 @@
 <main>
   <div id="form">
     <p class="intro">Marca as tarefas feitas na abertura e no fecho da loja. No fim, seleciona o teu nome e guarda.</p>
+    <div class="periodo-seg" id="periodoSeg">
+      <button type="button" data-p="abertura" class="active"><i data-lu="sunrise"></i> Abertura</button>
+      <button type="button" data-p="fecho"><i data-lu="moon"></i> Fecho</button>
+    </div>
     <div id="areas"></div>
 
     <div class="field">
       <label for="nome">O teu nome *</label>
-      <select id="nome" data-staff data-ph="Seleciona o teu nome"></select>
+      <select id="nome" data-staff data-area="sup" data-ph="Seleciona o teu nome"></select>
     </div>
     <div class="field">
       <label for="obs">Observa&#xE7;&#xF5;es (opcional)</label>
       <textarea id="obs" placeholder="Algo a registar? (ex.: faltou material, avaria...)"></textarea>
     </div>
 
-    <div class="summary" id="summary">0 tarefas marcadas</div>
     <button class="submit" id="btnSubmit"><i data-lu="check"></i> Confirmar checklist</button>
   </div>
 
@@ -138,19 +148,18 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 
 function render(){
   const root=document.getElementById('areas'); root.innerHTML='';
-  AREAS.forEach(function(a){
-    const card=document.createElement('div'); card.className='area'; card.dataset.key=a.key;
+  AREAS.forEach(function(a,idx){
+    const card=document.createElement('div'); card.className='area'+(idx===0?'':' hide'); card.dataset.key=a.key;
     let tasks='';
     a.tarefas.forEach(function(t,i){
       tasks+='<label class="task"><input type="checkbox" data-area="'+a.key+'" data-i="'+i+'"><span class="box"></span><span class="tt">'+esc(t)+'</span></label>';
     });
     card.innerHTML=
-      '<div class="area-head"><span class="area-ic"><i data-lu="'+a.lu+'" data-sz="22"></i></span><h2>'+esc(a.nome)+'</h2><span class="area-prog" id="prog-'+a.key+'">0/'+a.tarefas.length+'</span></div>'+
+      '<div class="area-head"><span class="area-ic"><i data-lu="'+a.lu+'" data-sz="22"></i></span><h2>'+esc(a.nome)+'</h2></div>'+
       '<button class="area-all" data-area="'+a.key+'">Marcar todas</button>'+
       '<div class="tasks">'+tasks+'</div>';
     root.appendChild(card);
   });
-  root.querySelectorAll('input[type=checkbox]').forEach(function(c){ c.addEventListener('change', update); });
   root.querySelectorAll('.area-all').forEach(function(b){
     b.addEventListener('click', function(){
       const key=b.dataset.area;
@@ -158,22 +167,17 @@ function render(){
       const allOn=[].every.call(boxes, x=>x.checked);
       boxes.forEach(function(x){ x.checked=!allOn; });
       b.textContent = allOn ? 'Marcar todas' : 'Desmarcar todas';
-      update();
     });
   });
-  update();
 }
 
-function update(){
-  let total=0, done=0;
-  AREAS.forEach(function(a){
-    const boxes=document.querySelectorAll('input[data-area="'+a.key+'"]');
-    let d=0; boxes.forEach(function(x){ if(x.checked) d++; });
-    total+=boxes.length; done+=d;
-    document.getElementById('prog-'+a.key).textContent=d+'/'+boxes.length;
-  });
-  document.getElementById('summary').textContent= done+' de '+total+' tarefas marcadas';
+function setPeriodo(key){
+  document.querySelectorAll('#areas .area').forEach(function(c){ c.classList.toggle('hide', c.dataset.key!==key); });
+  document.querySelectorAll('#periodoSeg button').forEach(function(b){ b.classList.toggle('active', b.dataset.p===key); });
 }
+document.getElementById('periodoSeg').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if(!b) return; setPeriodo(b.dataset.p);
+});
 
 function coletar(){
   return AREAS.map(function(a){
