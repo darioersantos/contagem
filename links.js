@@ -11,6 +11,7 @@ window.PORTAL_LINKS = {
   superliga: "http://manager9yc.github.io/superliga/",
   contagem:  "cofre.html",
   lembretes: "lembretes.html",
+  checklists: "checklists.html",
 
   /* ---- Templates ---- */
   sinaletica:        "",
@@ -32,13 +33,13 @@ window.PORTAL_LINKS = {
   atendimento_loja:  "atendimento_loja.html",
   atendimento_caixa: "",
   aniversario:       "aniversario.html",
-  limitacoes_horario:"",
+  limitacoes_horario:"limitacoes.html",
   satisfacao_staff:  "",
-  ferias:            "",
+  ferias:            "ferias.html",
 
   /* ---- Plano Formativo (em breve) ---- */
   pf_atendimento:    "",
-  pf_szclub:         "",
+  pf_szclub:         "szclub.html",
   pf_onlines:        "",
   pf_sprays:         "sprays.html",
   pf_palmilhas:      "palmilhas.html",
