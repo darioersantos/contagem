@@ -121,6 +121,7 @@
     #printArea .sigbox{margin-top:10px;}
     #printArea .sigbox img{max-width:280px;max-height:120px;border:1px solid #cbb9a5;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     #printArea .sigline{margin-top:6px;font-size:12px;color:#555;}
+    #printArea table.hlist td.hh{font-weight:800;color:#8a4500;border-bottom:2px solid #FF8100;}
   }
 </style>
 </head>
@@ -246,13 +247,14 @@
     </div>
 
     <div class="actions">
-      <button class="btn print" id="btnPrint" type="button"><i data-lu="printer"></i> Imprimir / PDF</button>
+      <button class="btn print" id="btnPrint" type="button"><i data-lu="printer"></i> Imprimir</button>
       <button class="btn save" id="btnSave" type="button"><i data-lu="download"></i> Guardar no hist&#xF3;rico</button>
     </div>
   </div>
 
   <div id="histView">
-    <button class="btn save" id="histBack" type="button" style="width:auto;margin:0 0 12px;">&#x2190; Voltar</button>
+    <button class="btn save" id="histBack" type="button" style="width:auto;margin:0 8px 12px 0;">&#x2190; Voltar</button>
+    <button class="btn print" id="btnHistPrint" type="button" style="width:auto;margin:0 0 12px;"><i data-lu="printer"></i> Imprimir lista (PDF)</button>
     <div class="card">
       <h2><i data-lu="history"></i> Hist&#xF3;rico de forma&#xE7;&#xF5;es</h2>
       <p class="hint">Forma&#xE7;&#xF5;es do Plano Formativo j&#xE1; dadas e assinadas.</p>
@@ -341,7 +343,7 @@ document.getElementById('btnSave').addEventListener('click',function(){
   var detalhe=JSON.stringify({topico:TOPICO, colaborador:d.colaborador, formador:d.formador, data:d.data, assinatura:d.assinatura, sigStamp:d.sigStamp});
   fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify({action:'nota_add', seccao:'_pfhist', autor:TOPICO+'|'+d.colaborador+'|'+d.data, texto:detalhe})})
-    .then(r=>r.json()).then(function(j){ if(j&&j.ok){ btn.textContent='\u2713 Guardado no hist\u00F3rico'; setTimeout(function(){btn.textContent=old;btn.disabled=false;},1600); } else throw 0; })
+    .then(r=>r.json()).then(function(j){ if(j&&j.ok){ btn.textContent='\u2713 Guardado'; setTimeout(function(){btn.textContent=old;btn.disabled=false;},1600); document.body.classList.add('pf-hist'); window.scrollTo(0,0); carregarPF(); } else throw 0; })
     .catch(function(){ btn.disabled=false; btn.textContent=old; alert('N\u00E3o foi poss\u00EDvel guardar. Tenta de novo.'); });
 });
 
@@ -381,6 +383,16 @@ function apagarPF(id){
     .then(r=>r.json()).then(function(){ PF=PF.filter(x=>String(x.id)!==String(id)); renderPF(); })
     .catch(function(){ alert('N\u00E3o foi poss\u00EDvel apagar.'); });
 }
+function imprimirLista(){
+  var rows='';
+  PF.forEach(function(o){ rows+='<tr><td class="v">'+esc(o.colaborador||'\u2014')+'</td><td>'+esc(fmtData(o.data))+'</td><td>'+esc(o.formador||'\u2014')+'</td></tr>'; });
+  var html='<div class="ph-top"><h1>Plano Formativo Interno \u2014 Sport Zone Vasco da Gama</h1><p>Staff que j\u00E1 teve esta forma\u00E7\u00E3o</p></div>'+
+    '<div class="ptopic">'+esc(TOPICO)+'</div>'+
+    '<table class="hlist"><tbody><tr><td class="hh">Colaborador</td><td class="hh">Data</td><td class="hh">Formador</td></tr>'+(rows||'<tr><td colspan="3">Sem registos.</td></tr>')+'</tbody></table>';
+  document.getElementById('printArea').innerHTML=html;
+  setTimeout(function(){ window.print(); },120);
+}
+document.getElementById('btnHistPrint').addEventListener('click',imprimirLista);
 document.getElementById('btnHistView').addEventListener('click',function(){ document.body.classList.add('pf-hist'); window.scrollTo(0,0); carregarPF(); });
 document.getElementById('histBack').addEventListener('click',function(){ document.body.classList.remove('pf-hist'); });
 </script>
