@@ -89,6 +89,17 @@
   .receipt .r-v.ok{color:var(--pos);}
   .receipt .r-obs{font-size:13px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--line);}
 
+  #histWrap{margin-top:22px;}
+  #histWrap h3{font-size:13px;font-weight:800;color:var(--accent-ink);text-transform:uppercase;letter-spacing:.04em;margin:0 2px 10px;display:flex;align-items:center;gap:7px;}
+  .hrow{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:11px 13px;margin-bottom:9px;}
+  .hrow .hinfo{flex:1;min-width:0;}
+  .hrow .hnome{font-weight:800;color:var(--accent-dark);}
+  .hrow .hsub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45;}
+  .hrow .hdel{background:none;border:none;color:var(--neg);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;flex:none;padding:2px 4px;}
+  #histEmpty{color:var(--muted);font-size:13px;padding:6px 2px;}
+  #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--pos);color:#fff;padding:13px 22px;border-radius:12px;font-weight:800;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:200;}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
   #printArea{display:none;}
   @media print{
     header,#form,#ok{display:none !important;}
@@ -138,19 +149,15 @@
 
     <button class="submit" id="btnSubmit"><i data-lu="check"></i> Confirmar checklist</button>
     <button class="printbtn" id="btnPrint" type="button"><i data-lu="printer"></i> Imprimir lista de tarefas do dia</button>
-  </div>
 
-  <div id="ok">
-    <div class="big"><i data-lu="check"></i></div>
-    <h2>Checklist registada!</h2>
-    <p id="okMsg"></p>
-    <div id="okReceipt" class="receipt"></div>
-    <div class="btns">
-      <button onclick="location.reload()">Nova checklist</button>
-      <a class="sec" href="index.html">Voltar ao portal</a>
+    <div id="histWrap">
+      <h3><i data-lu="history" data-sz="15"></i> Registos da abertura/fecho</h3>
+      <div id="hist"></div>
     </div>
   </div>
 </main>
+
+<div id="toast"></div>
 
 <div id="printArea"></div>
 
@@ -232,21 +239,13 @@ document.getElementById('btnSubmit').addEventListener('click', function(){
     .then(function(r){return r.json();})
     .then(function(j){
       if(j&&j.ok){
-        document.getElementById('form').style.display='none';
-        document.getElementById('okMsg').textContent='Obrigado, '+nome+'! Ficou registado e gravado.';
-        var dt=new Date();
-        var dataStr=('0'+dt.getDate()).slice(-2)+'/'+('0'+(dt.getMonth()+1)).slice(-2)+'/'+dt.getFullYear()+' '+('0'+dt.getHours()).slice(-2)+':'+('0'+dt.getMinutes()).slice(-2);
-        var rec='<div class="r-row"><span class="r-k">Respons\u00E1vel</span><span class="r-v">'+esc(nome)+'</span></div>'+
-                '<div class="r-row"><span class="r-k">Data e hora</span><span class="r-v">'+esc(dataStr)+'</span></div>';
-        payload.areas.forEach(function(a){
-          var feitas=a.tarefas.filter(function(t){return t.ok;}).length;
-          var tot=a.tarefas.length;
-          rec+='<div class="r-row"><span class="r-k">'+esc(a.nome)+'</span><span class="r-v'+(feitas===tot?' ok':'')+'">'+feitas+'/'+tot+' feitas</span></div>';
-        });
-        if(payload.obs){ rec+='<div class="r-obs"><b>Observa\u00E7\u00F5es:</b> '+esc(payload.obs)+'</div>'; }
-        document.getElementById('okReceipt').innerHTML=rec;
-        document.getElementById('ok').style.display='block';
-        window.scrollTo(0,0);
+        document.querySelectorAll('#areas input[type=checkbox]').forEach(function(c){ c.checked=false; });
+        document.querySelectorAll('.area-all').forEach(function(b){ b.textContent='Marcar todas'; });
+        document.getElementById('obs').value='';
+        document.getElementById('nome').value='';
+        btn.disabled=false; btn.innerHTML='<i data-lu="check"></i> Confirmar checklist';
+        mostrarToast('Checklist de '+nome+' registada');
+        carregarHist();
       }else{ throw new Error('erro'); }
     })
     .catch(function(){ alert('N\u00E3o foi poss\u00EDvel guardar. Tenta de novo.'); btn.disabled=false; btn.innerHTML='<i data-lu="check"></i> Confirmar checklist'; });
@@ -267,7 +266,49 @@ function imprimirDia(){
 }
 document.getElementById('btnPrint').addEventListener('click', imprimirDia);
 
+var _toastT=null;
+function mostrarToast(msg){
+  var t=document.getElementById('toast'); if(!t) return;
+  t.textContent=msg; t.classList.add('show');
+  if(_toastT) clearTimeout(_toastT);
+  _toastT=setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+function fmtDataHora(iso){ var d=new Date(iso); if(isNaN(d)) return String(iso||''); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+var HIST=[];
+function carregarHist(){
+  if(!BACKEND) return;
+  fetch(BACKEND+'?action=notas&t='+Date.now()).then(function(r){return r.json();}).then(function(j){
+    if(!j||!j.ok||!Array.isArray(j.notas)) return;
+    HIST=j.notas.filter(function(n){return String(n.seccao)==='_checklist';})
+      .map(function(n){ var p={}; try{ p=JSON.parse(n.texto||'{}'); }catch(e){} return {id:n.id, p:p, ts:p.data||n.data}; })
+      .sort(function(a,b){ return new Date(b.ts)-new Date(a.ts); });
+    renderHist();
+  }).catch(function(){});
+}
+function renderHist(){
+  var box=document.getElementById('hist'); if(!box) return;
+  if(!HIST.length){ box.innerHTML='<div id="histEmpty">Ainda n\u00E3o h\u00E1 registos.</div>'; return; }
+  box.innerHTML='';
+  HIST.forEach(function(h){
+    var p=h.p||{}; var areas=Array.isArray(p.areas)?p.areas:[];
+    var resumo=areas.map(function(a){ var f=(a.tarefas||[]).filter(function(t){return t.ok;}).length; var tot=(a.tarefas||[]).length; return esc(a.nome)+' '+f+'/'+tot; }).join(' \u00B7 ');
+    var row=document.createElement('div'); row.className='hrow';
+    row.innerHTML='<div class="hinfo"><div class="hnome">'+esc(p.nome||'\u2014')+'</div><div class="hsub">'+esc(fmtDataHora(h.ts))+(resumo?' \u00B7 '+resumo:'')+(p.obs?' \u00B7 '+esc(p.obs):'')+'</div></div>';
+    var del=document.createElement('button'); del.className='hdel'; del.textContent='\u2715'; del.title='Apagar registo'; del.onclick=function(){ apagarHist(h.id); };
+    row.appendChild(del);
+    box.appendChild(row);
+  });
+}
+function apagarHist(id){
+  if(!confirm('Apagar este registo?')) return;
+  fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'nota_del', id:id})})
+    .then(function(r){return r.json();}).then(function(){ HIST=HIST.filter(function(x){return String(x.id)!==String(id);}); renderHist(); })
+    .catch(function(){ alert('N\u00E3o foi poss\u00EDvel apagar.'); });
+}
+
 render();
+carregarHist();
 </script>
 </body>
 </html>
