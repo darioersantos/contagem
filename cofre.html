@@ -228,7 +228,7 @@
     </div>
   </div>
   <div class="h-date">
-    <label for="dataInput">&#x1F4C5; Data:</label>
+    <label for="dataInput"><i data-lu="calendar-days"></i> Data:</label>
     <input type="date" id="dataInput">
     <span class="saved" id="saveStatus"><span class="dot"></span><span class="saved-txt">Guardado</span></span>
   </div>
@@ -236,7 +236,7 @@
 
 <nav class="tabs">
   <button id="tabBtn-contagem" class="active" onclick="showTab('contagem')"><i data-lu="coins"></i> Contagem</button>
-  <button id="tabBtn-caixas" onclick="showTab('caixas')">&#x1F9FE; Caixas</button>
+  <button id="tabBtn-caixas" onclick="showTab('caixas')"><i data-lu="receipt"></i> Caixas</button>
 </nav>
 
 <main>
@@ -249,8 +249,8 @@
       <summary><i data-lu="lock"></i> Contagem de Cofre <span class="badge" id="badge-cofre">0 &#x20AC;</span><span class="chev">&#x25BC;</span></summary>
       <div class="card-body">
         <div class="periodo-seg" id="periodoSeg">
-          <button type="button" data-p="manha" class="active">&#x1F305; Manh&#xE3;</button>
-          <button type="button" data-p="noite">&#x1F319; Noite</button>
+          <button type="button" data-p="manha" class="active"><i data-lu="sunrise"></i> Manh&#xE3;</button>
+          <button type="button" data-p="noite"><i data-lu="moon"></i> Noite</button>
         </div>
         <div class="sub">Notas</div>
         <div id="cofre-notas"></div>
@@ -274,7 +274,7 @@
           <label for="metaCofre">Cofre alvo (&#x20AC;):</label>
           <input type="number" id="metaCofre" inputmode="decimal" step="50" style="width:110px;text-align:center;">
         </div>
-        <div class="diff ok" id="diff-cofre"><span>&#x2696;&#xFE0F; Diferen&#xE7;a face ao alvo</span><b>0 &#x20AC;</b></div>
+        <div class="diff ok" id="diff-cofre"><span><i data-lu="scale"></i> Diferen&#xE7;a face ao alvo</span><b>0 &#x20AC;</b></div>
 
         <div class="sig-block">
           <div class="sig-label"><i data-lu="pen-line"></i> Assinatura <span class="sig-hint">(toca em "Assinar" e assina com o dedo)</span></div>
@@ -294,7 +294,7 @@
     </details>
 
     <details class="card">
-      <summary>&#x1F3E6; Ingresso ao Banco <span class="badge" id="badge-banco">0 &#x20AC;</span><span class="chev">&#x25BC;</span></summary>
+      <summary><i data-lu="landmark"></i> Ingresso ao Banco <span class="badge" id="badge-banco">0 &#x20AC;</span><span class="chev">&#x25BC;</span></summary>
       <div class="card-body">
         <div class="sub">Notas</div>
         <div id="banco-notas"></div>
@@ -314,10 +314,10 @@
   <!-- ===================== CAIXAS ===================== -->
   <div class="tabview" id="view-caixas">
     <div class="card" style="padding:16px;">
-      <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;">&#x1F4B5; Retiradas das Caixas <span class="badge" id="badge-caixas" style="margin-left:auto;">0 &#x20AC;</span></div>
+      <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;"><i data-lu="banknote"></i> Retiradas das Caixas <span class="badge" id="badge-caixas" style="margin-left:auto;">0 &#x20AC;</span></div>
       <p class="hint">Preenche as retiradas e o Till Audit (com moedas) de cada caixa.</p>
       <div class="caixa-grid" id="caixas-container"></div>
-      <div class="grandtotal"><span>&#x1F3E6; TOTAL GERAL</span><b id="total-caixas">0 &#x20AC;</b></div>
+      <div class="grandtotal"><span><i data-lu="landmark"></i> TOTAL GERAL</span><b id="total-caixas">0 &#x20AC;</b></div>
     </div>
   </div>
 
