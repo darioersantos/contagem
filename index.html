@@ -72,6 +72,14 @@
   #taskBanner .taskrem .ic svg{width:26px;height:26px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;}
   #taskBanner .taskrem .txt{flex:1;min-width:0;font-size:14px;line-height:1.35;font-weight:700;}
   #taskBanner .taskrem .txt b{font-weight:800;}
+  @keyframes bannerbounce{0%,55%,100%{transform:translateY(0);}66%{transform:translateY(-6px);}78%{transform:translateY(0);}88%{transform:translateY(-3px);}}
+  #bdayBanner .bday,#evalBanner .evalrem,#taskBanner .taskrem,#thuBanner .thurem{animation:bannerbounce 2.4s ease-in-out infinite;}
+  @media (prefers-reduced-motion:reduce){#bdayBanner .bday,#evalBanner .evalrem,#taskBanner .taskrem,#thuBanner .thurem{animation:none;}}
+  #thuBanner .thurem{display:flex;align-items:center;gap:12px;background:#1a1303;color:#fff;border-radius:16px;padding:14px 16px;margin:14px 0 2px;box-shadow:var(--shadow);}
+  #thuBanner .thurem .ic{line-height:0;color:#ffb45e;flex:none;}
+  #thuBanner .thurem .ic svg{width:26px;height:26px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  #thuBanner .thurem .txt{flex:1;min-width:0;font-size:14px;line-height:1.35;font-weight:700;}
+  #thuBanner .thurem .txt b{font-weight:800;color:#ffb45e;}
   .tile .soon-tag{position:absolute;top:7px;right:7px;background:#efe9e0;color:#9a8f7d;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;}
   .tile.app{background:linear-gradient(135deg,#FF8100,#E66200);color:#fff;border:none;box-shadow:0 4px 16px rgba(230,98,0,.3);}
   .tile.app .nm{color:#fff;}
@@ -154,6 +162,7 @@
   <div id="bdayBanner"></div>
   <div id="evalBanner"></div>
   <div id="taskBanner"></div>
+  <div id="thuBanner"></div>
   <div class="search-wrap"><input type="search" id="searchBox" placeholder="&#x1F50E; Procurar formul&#xE1;rio, gui&#xE3;o ou imprim&#xED;vel&#x2026;" autocomplete="off"></div>
   <div id="portal"><div class="section"><div class="sk-grid"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div></div>
   <div id="noResults">Nada encontrado. Tenta outra palavra.</div>
@@ -168,6 +177,7 @@ const SECTIONS = [
   { t:'Aplica\u00E7\u00F5es', app:true, items:[
     {k:'lembretes',  ic:'list-checks',     nm:'Tarefas'},
     {k:'checklists', ic:'clipboard-check', nm:'Checklist Abertura/Fecho'},
+    {k:'limpeza',    ic:'clipboard-list',  nm:'Checklist de Loja'},
     {k:'contagem',   ic:'calculator',      nm:'Contagem de Dinheiro'},
     {k:'superliga',  ic:'trophy',          nm:'Super Liga'}
   ]},
@@ -182,7 +192,6 @@ const SECTIONS = [
   ]},
   { t:'Formul\u00E1rios', items:[
     {k:'happyhour',          ic:'banknote',      nm:'Happy Hour'},
-    {k:'limpeza',            ic:'clipboard-list',nm:'Checklist de Loja'},
     {k:'alarmado',           ic:'tag',           nm:'Alarmado'},
     {k:'admissao',           ic:'user-plus',     nm:'Pedido de Admiss\u00E3o'},
     {k:'avaliacoes',         ic:'star',          nm:'Avalia\u00E7\u00F5es Mensais'},
@@ -327,6 +336,15 @@ function checkMonthlyEval(){
   if(box) box.innerHTML='<a class="evalrem" href="'+url+'"><span class="ic">'+svgIcon('calendar-clock')+'</span><span class="txt">'+quando+'. N\u00e3o te esque\u00e7as de fazer as <b>avalia\u00e7\u00f5es mensais</b> dos colaboradores.</span></a>';
 }
 checkMonthlyEval();
+
+/* ---------- Aviso de quinta-feira (limpeza) at\u00e9 \u00e0s 11:00 ---------- */
+function checkThursday(){
+  var d=new Date();
+  if(d.getDay()!==4 || d.getHours()>=11) return;
+  var box=document.getElementById('thuBanner');
+  if(box) box.innerHTML='<div class="thurem"><span class="ic">'+svgIcon('clock')+'</span><span class="txt"><b>Staff todo:</b> limpar a loja antes das 10:00.</span></div>';
+}
+checkThursday();
 
 /* PIN gate */
 (function(){
