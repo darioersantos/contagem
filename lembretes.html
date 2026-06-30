@@ -34,7 +34,7 @@
   main{max-width:880px;margin:0 auto;padding:12px 12px 20px;}
 
   .add{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px;margin:4px 0 16px;}
-  .add textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink);min-height:64px;resize:vertical;}
+  .add textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink);min-height:110px;resize:vertical;}
   .add textarea:focus{outline:none;border-color:var(--accent);}
   .add .row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;align-items:center;}
   .add input[type=text]{flex:1;min-width:150px;border:1.5px solid var(--line);border-radius:12px;padding:11px;font-size:15px;font-family:inherit;background:#fff;}
@@ -44,6 +44,8 @@
   .add button{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:11px 16px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
   .add button:disabled{opacity:.6;}
   .add .sec-btn{background:#fff;border:1.5px solid var(--line);color:var(--accent-dark);}
+  .add .icon-only{padding:11px 13px;display:inline-flex;align-items:center;justify-content:center;}
+  .add .icon-only svg{width:18px;height:18px;}
   .add #btnMic .micsvg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:-4px;}
   .add #btnMic.rec{background:var(--neg);border-color:var(--neg);color:#fff;animation:micpulse 1s infinite;}
   @keyframes micpulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5);}50%{box-shadow:0 0 0 6px rgba(220,38,38,0);}}
@@ -139,12 +141,12 @@
   <div class="add">
     <textarea id="texto" placeholder="Escreve a tarefa..."></textarea>
     <div class="row">
-      <select id="criadoPor" data-staff data-area="sup" data-ph="Criada por (dire&#xE7;&#xE3;o)"></select>
+      <select id="criadoPor" data-staff data-area="sup" data-ph="Criada por"></select>
       <select id="autor" data-staff data-ph="Quem far&#xE1; a tarefa (opcional)"></select>
       <select id="seccao"></select>
-      <button id="btnMic" type="button" class="sec-btn" title="Ditar por voz"><svg class="micsvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg> Voz</button>
-      <button id="btnCamara" type="button" class="sec-btn"><i data-lu="camera"></i> C&#xE2;mara</button>
-      <button id="btnGaleria" type="button" class="sec-btn"><i data-lu="image"></i> Galeria</button>
+      <button id="btnMic" type="button" class="sec-btn icon-only" title="Ditar por voz" aria-label="Ditar por voz"><svg class="micsvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg></button>
+      <button id="btnCamara" type="button" class="sec-btn icon-only" title="C&#xE2;mara" aria-label="Tirar foto"><i data-lu="camera" data-sz="18"></i></button>
+      <button id="btnGaleria" type="button" class="sec-btn icon-only" title="Galeria" aria-label="Galeria"><i data-lu="image" data-sz="18"></i></button>
       <button id="btnAdd">&#xFF0B; Adicionar</button>
     </div>
     <input type="file" id="fileCamara" accept="image/*" capture="environment" style="display:none">
