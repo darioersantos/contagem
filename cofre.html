@@ -604,8 +604,10 @@ document.getElementById('btnPrint').addEventListener('click',()=>{
 });
 
 document.getElementById('btnClear').addEventListener('click',()=>{
-  if(confirm('Limpar TODA a contagem e come\u00E7ar de novo?\n(Os dados atuais ser\u00E3o apagados.)')){
+  if(confirm('Limpar a contagem do cofre e do banco e come\u00E7ar de novo?\n(As retiradas das caixas mant\u00EAm-se sempre registadas.)')){
+    var caixasGuardadas=state.caixas;
     state=defaultState(); state.data=today();
+    if(Array.isArray(caixasGuardadas)) state.caixas=caixasGuardadas;
     saveLocal(); initAll(); save();
   }
 });
@@ -617,13 +619,13 @@ function migrate(){
   if(!state.cofreManha) state.cofreManha=freshCofre();
   if(!state.cofreNoite) state.cofreNoite=freshCofre();
   if(state.periodo!=='manha' && state.periodo!=='noite') state.periodo='manha';
-  // NOVO DIA: assume o dia real e poe TUDO a zero (cofre manha+noite, banco e caixas)
+  // NOVO DIA: novo dia real -> o cofre (manha+noite) e o banco recomecam a zero.
+  // As RETIRADAS DAS CAIXAS NUNCA sao apagadas automaticamente (historico financeiro protegido).
   var hoje=today();
   if(state.data!==hoje){
     state.cofreManha=freshCofre();
     state.cofreNoite=freshCofre();
     state.banco={notas:{}, moedas:{}};
-    state.caixas=Array.from({length:N_CAIXAS},(_,i)=>({nome:'Caixa '+(i+1), retiradas:[''], audit:''}));
     state.periodo='manha';
     state.data=hoje;
   }
