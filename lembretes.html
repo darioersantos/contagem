@@ -43,7 +43,18 @@
   .add input:focus,.add select:focus{outline:none;border-color:var(--accent);}
   .add button{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:11px 16px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
   .add button:disabled{opacity:.6;}
-  #btnFoto{background:#fff;border:1.5px solid var(--line);color:var(--accent-dark);}
+  .add .sec-btn{background:#fff;border:1.5px solid var(--line);color:var(--accent-dark);}
+  .add #btnMic .micsvg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:-4px;}
+  .add #btnMic.rec{background:var(--neg);border-color:var(--neg);color:#fff;animation:micpulse 1s infinite;}
+  @keyframes micpulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5);}50%{box-shadow:0 0 0 6px rgba(220,38,38,0);}}
+  .note .editar{background:#fff;border:1.5px solid var(--line);color:var(--accent-dark);border-radius:9px;padding:7px 10px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;}
+  .note .edit-box{margin-top:9px;}
+  .note .edit-box textarea{width:100%;border:1.5px solid var(--accent);border-radius:10px;padding:9px;font-size:15px;font-family:inherit;min-height:60px;resize:vertical;background:#fff;}
+  .note .edit-box select{width:100%;margin-top:7px;border:1.5px solid var(--line);border-radius:10px;padding:9px;font-size:14px;font-family:inherit;background:#fff;}
+  .note .edit-row{display:flex;gap:8px;margin-top:7px;}
+  .note .edit-row button{border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}
+  .note .ed-save{background:var(--accent);color:#fff;}
+  .note .ed-cancel{background:#fff;border:1.5px solid var(--line);color:var(--muted);}
   #fotoPrev{margin-top:11px;display:none;align-items:center;gap:10px;}
   #fotoPrev img{width:80px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--line);}
   #fotoPrev button{background:#fff;border:1.5px solid var(--line);color:var(--neg);border-radius:9px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
@@ -101,6 +112,7 @@
     #printArea ul{list-style:none;margin:0;padding:0;}
     #printArea li{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #eee;page-break-inside:avoid;}
     #printArea .box{flex:none;width:14px;height:14px;border:1.5px solid #333;border-radius:3px;margin-top:1px;}
+    #printArea li img.pthumb{flex:none;width:46px;height:46px;object-fit:cover;border-radius:5px;border:1px solid #bbb;margin-left:6px;}
     #printArea i{color:#555;font-style:italic;}
   }
 </style>
@@ -130,10 +142,13 @@
       <select id="criadoPor" data-staff data-area="sup" data-ph="Criada por (dire&#xE7;&#xE3;o)"></select>
       <select id="autor" data-staff data-ph="Quem far&#xE1; a tarefa (opcional)"></select>
       <select id="seccao"></select>
-      <button id="btnFoto" type="button"><i data-lu="camera"></i> Foto</button>
+      <button id="btnMic" type="button" class="sec-btn" title="Ditar por voz"><svg class="micsvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg> Voz</button>
+      <button id="btnCamara" type="button" class="sec-btn"><i data-lu="camera"></i> C&#xE2;mara</button>
+      <button id="btnGaleria" type="button" class="sec-btn"><i data-lu="image"></i> Galeria</button>
       <button id="btnAdd">&#xFF0B; Adicionar</button>
     </div>
-    <input type="file" id="fileFoto" accept="image/*" style="display:none">
+    <input type="file" id="fileCamara" accept="image/*" capture="environment" style="display:none">
+    <input type="file" id="fileGaleria" accept="image/*" style="display:none">
     <div id="fotoPrev"></div>
   </div>
   <div id="lista"></div>
@@ -195,22 +210,36 @@ function render(){
       c.innerHTML=(done?'<span class="feito"><i data-lu="check" data-sz="14"></i> Conclu\u00EDdo</span><br>':'')+
         (txt?'<div class="txt">'+esc(txt)+'</div>':'')+
         (img?'<img class="thumb" alt="foto">':'')+
-        '<div class="meta">'+(criador?'\u270D\uFE0F Criada por <b>'+esc(criador)+'</b> \u00B7 ':'')+(n.autor?'\uD83D\uDC64 '+esc(n.autor)+' \u00B7 ':'')+fmtData(n.data)+
+        '<div class="meta">'+(criador?'\u270D\uFE0F Criada por <b>'+esc(criador)+'</b> \u00B7 ':'')+(n.autor?'\uD83D\uDC64 para <b>'+esc(n.autor)+'</b> \u00B7 ':'')+fmtData(n.data)+
         '<span class="acts">'+
           '<button class="concluir">'+(done?'<i data-lu="rotate-ccw" data-sz="14"></i> Reabrir':'<i data-lu="check" data-sz="14"></i> Concluir')+'</button>'+
           '<button class="comentar"><i data-lu="message-circle" data-sz="14"></i> Comentar</button>'+
-          '<button class="del"><i data-lu="x" data-sz="14"></i> Apagar</button>'+
+          '<button class="editar" title="Editar"><i data-lu="pen-line" data-sz="14"></i></button>'+
+          '<button class="del" title="Apagar"><i data-lu="x" data-sz="14"></i></button>'+
         '</span></div>'+
         '<div class="coments">'+comsHtml+'</div>'+
         '<div class="cbox" style="display:none">'+
           '<textarea class="cb-txt" placeholder="Escreve um coment\u00E1rio/nota..."></textarea>'+
           '<div class="cb-row"><select class="cb-nome" data-staff data-ph="O teu nome (opcional)"></select><button class="cb-send" type="button">Enviar</button></div>'+
+        '</div>'+
+        '<div class="edit-box" style="display:none">'+
+          '<textarea class="ed-txt"></textarea>'+
+          '<select class="ed-autor" data-staff data-ph="Para quem (opcional)"></select>'+
+          '<div class="edit-row"><button class="ed-save" type="button">Guardar</button><button class="ed-cancel" type="button">Cancelar</button></div>'+
         '</div>';
       if(img){ const th=c.querySelector('.thumb'); th.src=img; th.onclick=function(){ abrirFoto(img); }; }
       c.querySelector('.concluir').onclick=function(){ concluir(n.id, !done); };
       c.querySelector('.del').onclick=function(){ apagar(n.id); };
       const cbox=c.querySelector('.cbox');
       c.querySelector('.comentar').onclick=function(){ const open=cbox.style.display==='none'; cbox.style.display=open?'block':'none'; if(open) c.querySelector('.cb-txt').focus(); };
+      const ebox=c.querySelector('.edit-box');
+      c.querySelector('.editar').onclick=function(){
+        const open=ebox.style.display==='none';
+        ebox.style.display=open?'block':'none';
+        if(open){ const et=ebox.querySelector('.ed-txt'); et.value=txt; const ea=ebox.querySelector('.ed-autor'); if(ea) ea.value=n.autor||''; et.focus(); }
+      };
+      ebox.querySelector('.ed-cancel').onclick=function(){ ebox.style.display='none'; };
+      ebox.querySelector('.ed-save').onclick=function(){ const ea=ebox.querySelector('.ed-autor'); salvarEdicao(n, ebox.querySelector('.ed-txt').value, ea?ea.value:'', this); };
       c.querySelector('.cb-send').onclick=function(){ enviarComentario(n.id, c.querySelector('.cb-txt').value, c.querySelector('.cb-nome').value, this); };
       c.querySelectorAll('.com-del').forEach(function(b){ b.onclick=function(){ apagarComentario(b.dataset.id); }; });
       grp.appendChild(c);
@@ -242,13 +271,33 @@ function carregar(){
     .catch(function(){ document.getElementById('lista').innerHTML='<div class="status">Sem liga\u00E7\u00E3o. Verifica a internet e recarrega.</div>'; });
 }
 
-/* ---- Fotos ---- */
-document.getElementById('btnFoto').addEventListener('click',function(){ document.getElementById('fileFoto').click(); });
-document.getElementById('fileFoto').addEventListener('change',function(e){
-  const f=e.target.files&&e.target.files[0]; e.target.value='';
-  if(!f) return;
-  comprimir(f, function(data){ pendingFoto=data; mostrarPrev(); });
-});
+/* ---- Fotos (c\u00E2mara direta ou galeria) ---- */
+function onFoto(e){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return; comprimir(f, function(data){ pendingFoto=data; mostrarPrev(); }); }
+document.getElementById('btnCamara').addEventListener('click',function(){ document.getElementById('fileCamara').click(); });
+document.getElementById('btnGaleria').addEventListener('click',function(){ document.getElementById('fileGaleria').click(); });
+document.getElementById('fileCamara').addEventListener('change',onFoto);
+document.getElementById('fileGaleria').addEventListener('change',onFoto);
+
+/* ---- Ditar por voz (microfone) ---- */
+(function(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  var btn=document.getElementById('btnMic');
+  if(!SR||!btn){ if(btn) btn.style.display='none'; return; }
+  var rec=null, ligado=false;
+  btn.addEventListener('click',function(){
+    if(ligado){ try{ rec.stop(); }catch(e){} return; }
+    rec=new SR(); rec.lang='pt-PT'; rec.interimResults=false; rec.continuous=true;
+    var ta=document.getElementById('texto');
+    rec.onstart=function(){ ligado=true; btn.classList.add('rec'); };
+    rec.onend=function(){ ligado=false; btn.classList.remove('rec'); };
+    rec.onerror=function(){ ligado=false; btn.classList.remove('rec'); };
+    rec.onresult=function(ev){
+      var s=''; for(var i=ev.resultIndex;i<ev.results.length;i++){ if(ev.results[i].isFinal) s+=ev.results[i][0].transcript; }
+      if(s){ ta.value=(ta.value?ta.value.replace(/\s*$/,'')+' ':'')+s.trim(); }
+    };
+    try{ rec.start(); }catch(e){ ligado=false; btn.classList.remove('rec'); }
+  });
+})();
 function mostrarPrev(){
   const p=document.getElementById('fotoPrev');
   if(pendingFoto){ p.style.display='flex'; p.innerHTML='<img src="'+pendingFoto+'"><button type="button" id="fotoRem">\u2715 Remover foto</button>'; document.getElementById('fotoRem').onclick=function(){ pendingFoto=''; mostrarPrev(); }; }
@@ -282,7 +331,8 @@ function imprimir(){
     itens.forEach(function(n){
       total++;
       const t=parteTexto(n.texto).trim() || '(foto)';
-      html+='<li><span class="box"></span><span>'+esc(t)+(n.autor?' <i>\u2014 '+esc(n.autor)+'</i>':'')+'</span></li>';
+      const foto=parteFoto(n.texto);
+      html+='<li><span class="box"></span><span>'+esc(t)+(n.autor?' <i>\u2014 '+esc(n.autor)+'</i>':'')+'</span>'+(foto?'<img class="pthumb" src="'+foto+'">':'')+'</li>';
     });
     html+='</ul>';
   });
@@ -325,6 +375,38 @@ function apagar(id){
     body:JSON.stringify({action:'nota_del', id:id})})
     .then(r=>r.json()).then(function(){ NOTAS=NOTAS.filter(x=>String(x.id)!==String(id)); render(); })
     .catch(function(){ alert('N\u00E3o foi poss\u00EDvel apagar. Tenta de novo.'); });
+}
+
+function salvarEdicao(n, newText, newAutor, btn){
+  newText=String(newText||'').trim();
+  const criador=parteBy(n.texto), foto=parteFoto(n.texto), seccao=n.seccao;
+  if(!newText && !foto){ alert('A tarefa n\u00E3o pode ficar vazia.'); return; }
+  if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return; }
+  const textoFinal=(criador?'[[BY:'+criador+']]':'')+newText+(foto?IMGSEP+foto:'');
+  const oldId=String(n.id);
+  const coms=COMENTARIOS.filter(function(x){return x.parent===oldId;});
+  const oldIds=NOTAS.map(function(x){return String(x.id);});
+  if(btn){ btn.disabled=true; btn.textContent='A guardar\u2026'; }
+  function P(d){ return fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)}).then(function(r){return r.json();}); }
+  P({action:'nota_add', seccao:seccao, autor:newAutor||'', texto:textoFinal})
+   .then(function(){
+      if(!coms.length){ return P({action:'nota_del', id:oldId}); }
+      // tem coment\u00E1rios: localizar a nova tarefa e mover os coment\u00E1rios para ela
+      return fetch(BACKEND+'?action=notas&t='+Date.now()).then(function(r){return r.json();}).then(function(j){
+        const lista=(j&&j.notas)||[];
+        const nova=lista.filter(function(x){return String(x.seccao)===seccao && String(x.texto)===textoFinal && oldIds.indexOf(String(x.id))<0;})
+                        .sort(function(a,b){return new Date(b.data)-new Date(a.data);})[0];
+        const newId=nova?String(nova.id):null;
+        let chain=Promise.resolve();
+        if(newId){ coms.forEach(function(cm){
+          chain=chain.then(function(){ return P({action:'nota_add', seccao:'_comentario', autor:cm.autor||'', texto:newId+COMENTSEP+cm.texto}); })
+                     .then(function(){ return P({action:'nota_del', id:cm.id}); });
+        }); }
+        return chain.then(function(){ return P({action:'nota_del', id:oldId}); });
+      });
+   })
+   .then(function(){ carregar(); })
+   .catch(function(){ alert('N\u00E3o foi poss\u00EDvel guardar a edi\u00E7\u00E3o. Recarrega e tenta de novo.'); if(btn){ btn.disabled=false; btn.textContent='Guardar'; } });
 }
 
 function enviarComentario(parentId, texto, autor, btn){
