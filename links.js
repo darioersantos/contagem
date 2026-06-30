@@ -38,7 +38,7 @@ window.PORTAL_LINKS = {
   ferias:            "ferias.html",
 
   /* ---- Plano Formativo (em breve) ---- */
-  pf_atendimento:    "",
+  pf_atendimento:    "atendimento_cliente.html",
   pf_szclub:         "szclub.html",
   pf_onlines:        "",
   pf_sprays:         "sprays.html",
