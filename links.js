@@ -31,7 +31,7 @@ window.PORTAL_LINKS = {
   admissao:          "https://forms.gle/ooh9dxriXekfDVUU8",
   avaliacoes:        "avaliacoes.html",
   atendimento_loja:  "atendimento_loja.html",
-  atendimento_caixa: "",
+  atendimento_caixa: "atendimento_caixa.html",
   aniversario:       "aniversario.html",
   limitacoes_horario:"limitacoes.html",
   satisfacao_staff:  "",
