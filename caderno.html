@@ -44,6 +44,7 @@
   .two{display:flex;gap:12px;flex-wrap:wrap;}
   .two .field{flex:1;min-width:150px;}
   .sec-t{font-size:13px;font-weight:800;color:var(--accent-dark);margin:0 0 10px;display:flex;align-items:center;gap:8px;}
+  .part-label{font-size:12px;font-weight:800;color:var(--accent-ink);text-transform:uppercase;letter-spacing:.05em;margin:18px 2px 6px;}
 
   #ficha{display:none;}
   .hint-pick{text-align:center;color:var(--muted);font-size:14px;padding:30px 14px;}
@@ -92,6 +93,9 @@
     #printArea table.conv td{border:1px solid #ddd;padding:6px 8px;font-size:12.5px;vertical-align:top;}
     #printArea table.conv td.d{width:70px;font-weight:800;color:#8a4500;}
     #printArea table.conv td.t{width:130px;font-weight:700;}
+    #printArea .signrow{display:flex;justify-content:space-between;gap:40px;margin-top:46px;}
+    #printArea .signrow .sigcol{flex:1;text-align:center;font-size:12.5px;color:#333;border-top:1px solid #000;padding-top:6px;}
+    #printArea .signnote{margin-top:14px;font-size:12px;font-style:italic;color:#555;}
   }
 </style>
 </head>
@@ -126,31 +130,24 @@
   <div class="hint-pick" id="hintPick">Escolhe um colaborador para abrir o caderno.</div>
 
   <div id="ficha">
-    <div class="card">
-      <div class="two">
-        <div class="field"><label for="funcao">Fun&#xE7;&#xE3;o</label><input type="text" id="funcao" placeholder="Ex: Vendedor"></div>
-        <div class="field"><label for="desde">Na equipa desde</label><input type="text" id="desde" placeholder="Ex: mar&#xE7;o 2025"></div>
-      </div>
-    </div>
-
+    <div class="part-label">1 &#xB7; Pontos fortes e a desenvolver</div>
     <div class="card">
       <div class="sec-t"><i data-lu="dumbbell"></i> Pontos fortes</div>
-      <div class="field" style="margin:0;"><textarea id="fortes" placeholder="O que faz bem&#x2026;"></textarea></div>
+      <div class="field"><textarea id="fortes" placeholder="O que faz bem&#x2026;"></textarea></div>
+      <div class="sec-t" style="margin-top:14px;"><i data-lu="target"></i> A desenvolver</div>
+      <div class="field" style="margin:0 0 14px;"><textarea id="desenvolver" placeholder="O que pode melhorar&#x2026;"></textarea></div>
+      <button class="btn save" id="btnSavePontos" type="button" style="width:100%;"><i data-lu="save"></i> Guardar pontos</button>
     </div>
 
-    <div class="card">
-      <div class="sec-t"><i data-lu="target"></i> A desenvolver</div>
-      <div class="field" style="margin:0;"><textarea id="desenvolver" placeholder="O que pode melhorar&#x2026;"></textarea></div>
-    </div>
-
+    <div class="part-label">2 &#xB7; Registo das conversas</div>
     <div class="card conv-add">
-      <div class="sec-t"><i data-lu="message-circle"></i> Registo de conversas</div>
+      <div class="sec-t"><i data-lu="message-circle"></i> Nova conversa</div>
       <div class="crow">
         <div class="field f-data"><label for="cData">Data</label><input type="date" id="cData"></div>
         <div class="field"><label for="cTema">Tema</label><input type="text" id="cTema" placeholder="Ex: Acompanhamento"></div>
       </div>
       <div class="field"><label for="cNotas">Notas</label><textarea id="cNotas" placeholder="O que foi combinado / observado&#x2026;"></textarea></div>
-      <button class="btn save" id="btnConv" type="button" style="min-width:0;">&#xFF0B; Adicionar conversa</button>
+      <button class="btn save" id="btnConv" type="button" style="width:100%;">&#xFF0B; Adicionar conversa</button>
       <div id="convList"></div>
     </div>
 
@@ -161,8 +158,7 @@
     </div>
 
     <div class="actions">
-      <button class="btn save" id="btnSave" type="button"><i data-lu="save"></i> Guardar caderno</button>
-      <button class="btn print" id="btnPrint" type="button"><i data-lu="printer"></i> Imprimir / PDF</button>
+      <button class="btn print" id="btnPrint" type="button"><i data-lu="printer"></i> Imprimir para assinar (PDF)</button>
     </div>
     <div class="status" id="status"></div>
   </div>
@@ -187,7 +183,7 @@ var data=blankData();  // dados do caderno atual
 var oldIds=[];         // notas antigas deste colaborador (limpar ao guardar)
 var compM={};          // matriz de competencias
 
-function blankData(){ return {funcao:'', desde:'', fortes:'', desenvolver:'', conversas:[]}; }
+function blankData(){ return {fortes:'', desenvolver:'', conversas:[]}; }
 function showFicha(on){ document.getElementById('ficha').style.display=on?'block':'none'; document.getElementById('hintPick').style.display=on?'none':'block'; }
 
 document.getElementById('colaborador').addEventListener('change',function(){ loadFor(this.value); });
@@ -212,8 +208,6 @@ function loadFor(name){
 }
 
 function paint(){
-  document.getElementById('funcao').value=data.funcao||'';
-  document.getElementById('desde').value=data.desde||'';
   document.getElementById('fortes').value=data.fortes||'';
   document.getElementById('desenvolver').value=data.desenvolver||'';
   document.getElementById('cData').value=today();
@@ -229,10 +223,12 @@ function pintaConversas(){
     var div=document.createElement('div'); div.className='conv';
     div.innerHTML='<div class="ch"><span class="cd">'+esc(fmtData(c.data))+'</span><span class="ct">'+esc(c.tema||'')+'</span><button class="cdel" type="button">\u2715</button></div>'+(c.notas?'<div class="cn">'+esc(c.notas)+'</div>':'');
     div.querySelector('.cdel').onclick=function(){
+      if(!confirm('Apagar esta conversa?')) return;
       var i=data.conversas.indexOf(c); if(i<0){ // procurar por igualdade
         data.conversas=data.conversas.filter(function(x){return !(x.data===c.data&&x.tema===c.tema&&x.notas===c.notas);});
       } else data.conversas.splice(i,1);
       pintaConversas();
+      guardar(null);
     };
     l.appendChild(div);
   });
@@ -250,44 +246,47 @@ function pintaComp(){
 }
 
 /* sincronizar campos de texto -> data */
-['funcao','desde','fortes','desenvolver'].forEach(function(id){
+['fortes','desenvolver'].forEach(function(id){
   document.getElementById(id).addEventListener('input',function(){ data[id]=this.value; });
 });
 
-/* adicionar conversa */
+/* guardar tudo (1 registo por colaborador: adiciona novo, apaga antigos) */
+function guardar(btn, doneLabel){
+  if(!current){ alert('Escolhe um colaborador.'); return Promise.resolve(false); }
+  if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return Promise.resolve(false); }
+  data.fortes=document.getElementById('fortes').value;
+  data.desenvolver=document.getElementById('desenvolver').value;
+  var old=btn?btn.textContent:''; if(btn){ btn.disabled=true; btn.textContent='A guardar\u2026'; } setStatus('');
+  var aLimpar=oldIds.slice();
+  return fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'nota_add', seccao:SEC, autor:current, texto:JSON.stringify(data)})})
+    .then(function(r){return r.json();}).then(function(j){
+      if(!(j&&j.ok)) throw 0;
+      var dels=aLimpar.map(function(id){ return fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'nota_del', id:id})}).catch(function(){}); });
+      return Promise.all(dels);
+    })
+    .then(function(){
+      if(btn){ btn.textContent=doneLabel||'\u2713 Guardado'; setTimeout(function(){ btn.textContent=old; btn.disabled=false; },1600); }
+      loadFor(current); // re-sincroniza ids e repinta
+      return true;
+    })
+    .catch(function(){ if(btn){ btn.disabled=false; btn.textContent=old; } alert('N\u00E3o foi poss\u00EDvel guardar. Tenta de novo.'); return false; });
+}
+
+/* parte 1 \u2014 guardar pontos */
+document.getElementById('btnSavePontos').addEventListener('click',function(){ guardar(this,'\u2713 Guardado'); });
+
+/* parte 2 \u2014 adicionar conversa (grava logo) */
 document.getElementById('btnConv').addEventListener('click',function(){
   var d=document.getElementById('cData').value||today();
   var tema=document.getElementById('cTema').value.trim();
   var notas=document.getElementById('cNotas').value.trim();
   if(!tema && !notas){ alert('Escreve o tema ou as notas da conversa.'); return; }
+  if(!current){ alert('Escolhe um colaborador.'); return; }
   data.conversas.push({data:d, tema:tema, notas:notas});
   document.getElementById('cTema').value=''; document.getElementById('cNotas').value=''; document.getElementById('cData').value=today();
   pintaConversas();
-});
-
-/* guardar (1 registo por colaborador: adiciona novo, apaga antigos) */
-document.getElementById('btnSave').addEventListener('click',function(){
-  if(!current){ alert('Escolhe um colaborador.'); return; }
-  if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return; }
-  // garantir captura dos campos de texto
-  data.funcao=document.getElementById('funcao').value;
-  data.desde=document.getElementById('desde').value;
-  data.fortes=document.getElementById('fortes').value;
-  data.desenvolver=document.getElementById('desenvolver').value;
-  var btn=this, old=btn.textContent; btn.disabled=true; btn.textContent='A guardar\u2026'; setStatus('');
-  var aLimpar=oldIds.slice();
-  fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'nota_add', seccao:SEC, autor:current, texto:JSON.stringify(data)})})
-    .then(function(r){return r.json();}).then(function(j){
-      if(!(j&&j.ok)) throw 0;
-      // apagar versoes antigas
-      var dels=aLimpar.map(function(id){ return fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'nota_del', id:id})}).catch(function(){}); });
-      Promise.all(dels).then(function(){
-        btn.textContent='\u2713 Guardado'; setTimeout(function(){ btn.textContent=old; btn.disabled=false; },1600);
-        loadFor(current); // re-sincroniza ids
-      });
-    })
-    .catch(function(){ btn.disabled=false; btn.textContent=old; alert('N\u00E3o foi poss\u00EDvel guardar. Tenta de novo.'); });
+  guardar(this,'\u2713 Adicionada');
 });
 
 /* imprimir */
@@ -298,16 +297,18 @@ function montarPrint(){
   (data.conversas||[]).slice().sort(function(a,b){return new Date(b.data)-new Date(a.data);}).forEach(function(c){
     conv+='<tr><td class="d">'+esc(fmtData(c.data))+'</td><td class="t">'+esc(c.tema||'')+'</td><td>'+esc(c.notas||'')+'</td></tr>';
   });
+  var hoje=new Date().toLocaleDateString('pt-PT');
   var html='<h1>Caderno de Acompanhamento</h1><div class="psub">Sport Zone \u00B7 Vasco da Gama \u2014 privado da dire\u00E7\u00E3o</div>'
     +'<table class="who"><tbody>'
     +'<tr><td class="k">Colaborador</td><td class="v">'+esc(current||'\u2014')+'</td></tr>'
-    +'<tr><td class="k">Fun\u00E7\u00E3o</td><td class="v">'+esc(data.funcao||'\u2014')+'</td></tr>'
-    +'<tr><td class="k">Na equipa desde</td><td class="v">'+esc(data.desde||'\u2014')+'</td></tr>'
+    +'<tr><td class="k">Data</td><td class="v">'+esc(hoje)+'</td></tr>'
     +'</tbody></table>'
     +'<h2>Pontos fortes</h2><p>'+esc(data.fortes||'\u2014')+'</p>'
     +'<h2>A desenvolver</h2><p>'+esc(data.desenvolver||'\u2014')+'</p>'
     +'<h2>Registo de conversas</h2>'+(conv?'<table class="conv"><tbody>'+conv+'</tbody></table>':'<p>\u2014</p>')
-    +'<h2>Liga\u00E7\u00E3o ao Mapa de Compet\u00EAncias</h2><p>'+(reforcar.length?('A refor\u00E7ar: '+esc(reforcar.join('; '))):'Aut\u00F3nomo nos t\u00F3picos avaliados ou sem dados.')+'</p>';
+    +'<h2>Liga\u00E7\u00E3o ao Mapa de Compet\u00EAncias</h2><p>'+(reforcar.length?('A refor\u00E7ar: '+esc(reforcar.join('; '))):'Aut\u00F3nomo nos t\u00F3picos avaliados ou sem dados.')+'</p>'
+    +'<div class="signnote">Comprometemo-nos a trabalhar em sintonia nos pontos a desenvolver acima indicados.</div>'
+    +'<div class="signrow"><div class="sigcol">Supervisor</div><div class="sigcol">Colaborador</div></div>';
   document.getElementById('printArea').innerHTML=html;
 }
 function imprimir(){ if(!current){ alert('Escolhe um colaborador.'); return; } montarPrint(); setTimeout(function(){ window.print(); },120); }
