@@ -63,6 +63,18 @@
   .total-card .trow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 0;font-size:15px;font-weight:700;}
   .total-card .trow b{font-size:22px;font-weight:800;color:#ffb45e;}
 
+  .declara{display:flex;align-items:flex-start;gap:10px;font-size:14px;margin:0 0 12px;cursor:pointer;}
+  .declara input{width:22px;height:22px;flex:none;accent-color:var(--accent);margin-top:1px;}
+  .sig-label{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sig-wrap{position:relative;border:1.5px dashed var(--line);border-radius:12px;height:160px;background:#fff;overflow:hidden;}
+  #sigCanvas{width:100%;height:100%;display:block;touch-action:pan-y;}
+  #sigCanvas.signing{box-shadow:0 0 0 2px var(--accent) inset;border-radius:12px;}
+  .sig-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#c9bca9;font-size:15px;pointer-events:none;}
+  .sig-actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;}
+  #sigToggle{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px;}
+  #sigToggle.on{background:var(--pos);}
+  #sigClear{background:#fff;border:1.5px solid var(--line);color:var(--neg);border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px;}
+  .stamp{font-size:12px;color:var(--muted);}
   .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
   .btn{flex:1;min-width:150px;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;}
   .btn.save{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(230,98,0,.3);}
@@ -101,6 +113,10 @@
     #printArea .fb{margin-top:14px;font-size:13px;}
     #printArea .fb .lbl{font-weight:800;color:#8a4500;text-transform:uppercase;font-size:12px;letter-spacing:.04em;}
     #printArea .fb .box{border:1px solid #ccc;border-radius:6px;padding:8px;margin-top:4px;min-height:50px;white-space:pre-wrap;}
+    #printArea .declar{margin-top:16px;font-size:12.5px;font-style:italic;color:#333;}
+    #printArea .sigbox{margin-top:8px;}
+    #printArea .sigbox img{max-height:90px;border:1px solid #ccc;border-radius:6px;background:#fff;}
+    #printArea .sigbox .sigline{font-size:12px;color:#555;margin-top:3px;}
   }
 </style>
 </head>
@@ -152,6 +168,20 @@
 
   <div class="card total-card">
     <div class="trow"><span>Respondidas</span><b id="tTot">0 / 9</b></div>
+  </div>
+
+  <div class="card">
+    <label class="declara"><input type="checkbox" id="declaro"><span>Declaro que fui avaliado/a e tomei conhecimento desta avalia&#xE7;&#xE3;o.</span></label>
+    <div class="sig-label"><i data-lu="pen-line"></i> Assinatura do colaborador</div>
+    <div class="sig-wrap">
+      <canvas id="sigCanvas"></canvas>
+      <span class="sig-ph" id="sigPh">Toca em "Assinar" e assina com o dedo</span>
+    </div>
+    <div class="sig-actions">
+      <button id="sigToggle" type="button"><i data-lu="pen-line"></i> Assinar</button>
+      <button id="sigClear" type="button">Limpar</button>
+      <span class="stamp" id="sigStampTxt"></span>
+    </div>
   </div>
 
   <div class="actions">
@@ -254,6 +284,26 @@ document.getElementById('avaliador').addEventListener('change',function(){ st.av
 document.getElementById('data').addEventListener('change',function(){ st.data=this.value; save(); });
 document.getElementById('feedback').addEventListener('input',function(){ st.feedback=this.value; save(); });
 
+/* ---------- assinatura ---------- */
+var sigData='', sigStamp='';
+(function(){
+  var cv=document.getElementById('sigCanvas'); if(!cv) return; var ctx=cv.getContext('2d');
+  var ph=document.getElementById('sigPh'), toggle=document.getElementById('sigToggle');
+  var drawing=false,last=null,hasInk=false,enabled=false;
+  function setup(){ var r=cv.getBoundingClientRect(); if(!r.width) return; var dpr=window.devicePixelRatio||1; cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#1a1303'; }
+  function pos(e){ var r=cv.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
+  function start(e){ if(!enabled) return; e.preventDefault(); drawing=true; last=pos(e); ph.style.display='none'; }
+  function move(e){ if(!drawing) return; e.preventDefault(); var p=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; hasInk=true; }
+  function end(){ if(!drawing) return; drawing=false; if(hasInk){ sigData=cv.toDataURL('image/png'); sigStamp=new Date().toLocaleString('pt-PT'); document.getElementById('sigStampTxt').textContent='Assinado: '+sigStamp; } }
+  cv.onpointerdown=start; cv.onpointermove=move; cv.onpointerup=end; cv.onpointercancel=function(){ drawing=false; };
+  window.addEventListener('pointerup',end);
+  function setEnabled(on){ enabled=on; cv.style.touchAction=on?'none':'pan-y'; cv.classList.toggle('signing',on); toggle.textContent=on?'\u2713 Terminar':'\u270D\uFE0F Assinar'; toggle.classList.toggle('on',on); if(on) ph.style.display='none'; else if(!sigData) ph.style.display=''; }
+  toggle.onclick=function(){ setEnabled(!enabled); };
+  document.getElementById('sigClear').onclick=function(){ ctx.clearRect(0,0,cv.width,cv.height); sigData=''; sigStamp=''; hasInk=false; ph.style.display=''; document.getElementById('sigStampTxt').textContent=''; };
+  setTimeout(setup,40); window.addEventListener('resize',setup);
+  setEnabled(false);
+})();
+
 /* ---------- imprimir ---------- */
 function respostaTexto(d,p){
   var a=d.ans&&d.ans[p.k];
@@ -275,6 +325,9 @@ function montarPrint(d){
     +'</tbody></table>'
     +'<table class="res"><tbody>'+body+'</tbody></table>';
   if(d.feedback){ html+='<div class="fb"><div class="lbl">Coment\u00E1rios sobre o colaborador</div><div class="box">'+esc(d.feedback)+'</div></div>'; }
+  html+='<div class="declar">"Declaro que fui avaliado/a e tomei conhecimento desta avalia\u00E7\u00E3o."</div>';
+  var _assin=d.assinatura||sigData, _stamp=d.sigStamp||sigStamp;
+  if(_assin){ html+='<div class="sigbox"><img src="'+_assin+'"><div class="sigline">Assinatura do colaborador'+(_stamp?' \u2014 '+esc(_stamp):'')+'</div></div>'; }
   document.getElementById('printArea').innerHTML=html;
 }
 function imprimir(){ montarPrint(st); setTimeout(function(){ window.print(); },120); }
@@ -284,8 +337,10 @@ document.getElementById('btnPrintTop').addEventListener('click',imprimir);
 /* ---------- guardar na nuvem ---------- */
 document.getElementById('btnSave').addEventListener('click',function(){
   if(!st.colaborador){ alert('Escolhe o colaborador.'); return; }
+  if(!document.getElementById('declaro').checked){ alert('O colaborador tem de declarar que tomou conhecimento da avalia\u00E7\u00E3o.'); return; }
+  if(!sigData){ alert('Falta a assinatura do colaborador.'); return; }
   if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return; }
-  var payload={colaborador:st.colaborador, avaliador:st.avaliador, data:st.data, ans:st.ans, feedback:st.feedback, respondidas:nRespondidas(st)};
+  var payload={colaborador:st.colaborador, avaliador:st.avaliador, data:st.data, ans:st.ans, feedback:st.feedback, respondidas:nRespondidas(st), declaro:true, assinatura:sigData, sigStamp:sigStamp};
   var btn=this, old=btn.textContent; btn.disabled=true; btn.textContent='A guardar\u2026';
   fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify({action:'nota_add', seccao:SEC, autor:st.colaborador+'|'+st.data, texto:JSON.stringify(payload)})})
