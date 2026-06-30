@@ -81,6 +81,14 @@
   .printbtn{width:100%;margin-top:10px;background:#fff;color:var(--accent-dark);border:1.5px solid var(--line);border-radius:14px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:9px;}
   .printbtn:active{transform:scale(.99);}
 
+  .receipt{text-align:left;max-width:420px;margin:0 auto 22px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px;}
+  .receipt .r-row{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:6px 0;border-bottom:1px solid var(--line);}
+  .receipt .r-row:last-child{border-bottom:none;}
+  .receipt .r-k{color:var(--muted);font-weight:700;}
+  .receipt .r-v{font-weight:800;color:var(--ink);text-align:right;}
+  .receipt .r-v.ok{color:var(--pos);}
+  .receipt .r-obs{font-size:13px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--line);}
+
   #printArea{display:none;}
   @media print{
     header,#form,#ok{display:none !important;}
@@ -134,8 +142,9 @@
 
   <div id="ok">
     <div class="big"><i data-lu="check"></i></div>
-    <h2>Checklist registado!</h2>
+    <h2>Checklist registada!</h2>
     <p id="okMsg"></p>
+    <div id="okReceipt" class="receipt"></div>
     <div class="btns">
       <button onclick="location.reload()">Nova checklist</button>
       <a class="sec" href="index.html">Voltar ao portal</a>
@@ -151,8 +160,13 @@ const BACKEND=(typeof window!=='undefined'&&window.BACKEND_URL?String(window.BAC
 
 const AREAS=[
   {key:'abertura', nome:'Abertura', lu:'sunrise', tarefas:[
-    'Fazer VDL',
-    'Fazer ingresso \u00E0 Loomis (segundas, quartas e sextas)'
+    'Dar a volta \u00E0 loja ver necessidades',
+    'Fazer VDL (Florisbela)',
+    'Contagem cofre',
+    'Contagem ingresso',
+    'Imprimir briefing e preencher',
+    'Colar o F12',
+    'Planear entrada de loja no turno da manh\u00E3'
   ]},
   {key:'fecho', nome:'Fecho', lu:'moon', tarefas:[
     'Zebras e r\u00E1dios a carregar',
@@ -219,7 +233,18 @@ document.getElementById('btnSubmit').addEventListener('click', function(){
     .then(function(j){
       if(j&&j.ok){
         document.getElementById('form').style.display='none';
-        document.getElementById('okMsg').textContent='Obrigado, '+nome+'! Checklist registada.';
+        document.getElementById('okMsg').textContent='Obrigado, '+nome+'! Ficou registado e gravado.';
+        var dt=new Date();
+        var dataStr=('0'+dt.getDate()).slice(-2)+'/'+('0'+(dt.getMonth()+1)).slice(-2)+'/'+dt.getFullYear()+' '+('0'+dt.getHours()).slice(-2)+':'+('0'+dt.getMinutes()).slice(-2);
+        var rec='<div class="r-row"><span class="r-k">Respons\u00E1vel</span><span class="r-v">'+esc(nome)+'</span></div>'+
+                '<div class="r-row"><span class="r-k">Data e hora</span><span class="r-v">'+esc(dataStr)+'</span></div>';
+        payload.areas.forEach(function(a){
+          var feitas=a.tarefas.filter(function(t){return t.ok;}).length;
+          var tot=a.tarefas.length;
+          rec+='<div class="r-row"><span class="r-k">'+esc(a.nome)+'</span><span class="r-v'+(feitas===tot?' ok':'')+'">'+feitas+'/'+tot+' feitas</span></div>';
+        });
+        if(payload.obs){ rec+='<div class="r-obs"><b>Observa\u00E7\u00F5es:</b> '+esc(payload.obs)+'</div>'; }
+        document.getElementById('okReceipt').innerHTML=rec;
         document.getElementById('ok').style.display='block';
         window.scrollTo(0,0);
       }else{ throw new Error('erro'); }
