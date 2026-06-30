@@ -70,6 +70,25 @@
   #ok .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
   #ok a,#ok button{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:13px 20px;font-size:15px;font-weight:800;cursor:pointer;text-decoration:none;font-family:inherit;}
   #ok a.sec{background:#fff;color:var(--accent-dark);border:1.5px solid var(--line);}
+
+  .printbtn{width:100%;margin-top:10px;background:#fff;color:var(--accent-dark);border:1.5px solid var(--line);border-radius:14px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:9px;}
+  .printbtn:active{transform:scale(.99);}
+
+  #printArea{display:none;}
+  @media print{
+    header,#form,#ok{display:none !important;}
+    #printArea{display:block;}
+    #printArea .sheet{page-break-after:always;break-after:page;padding-top:4mm;}
+    #printArea .sheet:last-child{page-break-after:auto;break-after:auto;}
+    #printArea .ph-head{border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:12px;}
+    #printArea .ph-head h1{font-size:20px;margin:0;}
+    #printArea .ph-head .ph-sub{font-size:13px;color:#222;margin-top:2px;}
+    #printArea h2{font-size:16px;margin:14px 0 8px;}
+    #printArea ul{list-style:none;padding:0;margin:0;}
+    #printArea li{display:flex;align-items:center;gap:11px;font-size:14px;padding:7px 0;border-bottom:1px solid #ddd;}
+    #printArea li .bx{width:18px;height:18px;border:1.6px solid #000;border-radius:3px;flex:none;}
+    #printArea .ph-sign{margin-top:24px;font-size:13px;line-height:2.4;}
+  }
 </style>
 </head>
 <body>
@@ -103,6 +122,7 @@
 
     <div class="summary" id="summary">0 tarefas marcadas</div>
     <button class="submit" id="btnSubmit"><i data-lu="check"></i> Confirmar checklist</button>
+    <button class="printbtn" id="btnPrint" type="button"><i data-lu="printer"></i> Imprimir 1 folha por sec&#xE7;&#xE3;o</button>
   </div>
 
   <div id="ok">
@@ -115,6 +135,8 @@
     </div>
   </div>
 </main>
+
+<div id="printArea"></div>
 
 <script>
 "use strict";
@@ -241,6 +263,21 @@ document.getElementById('btnSubmit').addEventListener('click', function(){
       btn.disabled=false; btn.textContent='Confirmar limpeza';
     });
 });
+
+function imprimirPorSeccao(){
+  var d=new Date();
+  var data=('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+  var html='';
+  AREAS.forEach(function(a){
+    html+='<div class="sheet"><div class="ph-head"><h1>Checklist de Loja \u2014 '+esc(a.nome)+'</h1><div class="ph-sub">Sport Zone Vasco da Gama \u00B7 Data: '+data+'</div></div>';
+    html+='<h2>Tarefas</h2><ul>';
+    a.tarefas.forEach(function(t){ html+='<li><span class="bx"></span><span>'+esc(t)+'</span></li>'; });
+    html+='</ul><div class="ph-sign">Respons\u00E1vel: ________________________________<br>Assinatura: __________________________________</div></div>';
+  });
+  document.getElementById('printArea').innerHTML=html;
+  setTimeout(function(){ window.print(); },80);
+}
+document.getElementById('btnPrint').addEventListener('click', imprimirPorSeccao);
 
 render();
 </script>
