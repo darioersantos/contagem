@@ -76,6 +76,19 @@
   .btn.print{background:#fff;border:2px solid var(--accent);color:var(--accent-dark);}
   .status{text-align:center;font-size:12px;color:var(--muted);margin-top:8px;min-height:14px;}
 
+  /* assinaturas digitais */
+  .sign-grid{display:flex;gap:12px;flex-wrap:wrap;}
+  .sign-col{flex:1 1 240px;min-width:0;}
+  .sign-col label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sign-pad{position:relative;border:1.5px dashed var(--line);border-radius:12px;background:#fff;height:150px;touch-action:none;overflow:hidden;}
+  .sign-pad canvas{display:block;width:100%;height:100%;}
+  .sign-pad .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#c3bbb0;font-size:13px;font-weight:600;pointer-events:none;}
+  .sign-pad.has .ph{display:none;}
+  .sign-bar{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+  .sign-clear{background:none;border:none;color:var(--neg);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;padding:4px 2px;}
+  .sign-state{font-size:11px;font-weight:700;color:var(--muted);}
+  .sign-state.ok{color:var(--pos);}
+
   /* Impressao */
   #printArea{display:none;}
   @media print{
@@ -93,8 +106,12 @@
     #printArea table.conv td{border:1px solid #ddd;padding:6px 8px;font-size:12.5px;vertical-align:top;}
     #printArea table.conv td.d{width:70px;font-weight:800;color:#8a4500;}
     #printArea table.conv td.t{width:130px;font-weight:700;}
-    #printArea .signrow{display:flex;justify-content:space-between;gap:40px;margin-top:46px;}
-    #printArea .signrow .sigcol{flex:1;text-align:center;font-size:12.5px;color:#333;border-top:1px solid #000;padding-top:6px;}
+    #printArea .signrow{display:flex;justify-content:space-between;gap:40px;margin-top:30px;page-break-inside:avoid;}
+    #printArea .signrow .sigcol{flex:1;text-align:center;font-size:12.5px;color:#333;}
+    #printArea .signrow .sigcol .sigimg{height:70px;margin-bottom:2px;display:flex;align-items:flex-end;justify-content:center;}
+    #printArea .signrow .sigcol .sigimg img{max-height:70px;max-width:100%;}
+    #printArea .signrow .sigcol .sigline{border-top:1px solid #000;padding-top:6px;font-weight:700;}
+    #printArea .signrow .sigcol .signame{font-size:11.5px;color:#555;margin-top:2px;}
     #printArea .signnote{margin-top:14px;font-size:12px;font-style:italic;color:#555;}
   }
 </style>
@@ -157,6 +174,32 @@
       <a class="comp-link" href="competencias.html">Abrir Mapa de Compet&#xEA;ncias &#x2192;</a>
     </div>
 
+    <div class="part-label">3 &#xB7; Observa&#xE7;&#xF5;es</div>
+    <div class="card">
+      <div class="sec-t"><i data-lu="clipboard-list"></i> Observa&#xE7;&#xF5;es</div>
+      <div class="field" style="margin:0 0 14px;"><textarea id="obs" placeholder="Notas adicionais, contexto, combina&#xE7;&#xF5;es&#x2026;"></textarea></div>
+      <button class="btn save" id="btnSaveObs" type="button" style="width:100%;"><i data-lu="save"></i> Guardar observa&#xE7;&#xF5;es</button>
+    </div>
+
+    <div class="part-label">4 &#xB7; Assinaturas digitais</div>
+    <div class="card">
+      <div class="sec-t"><i data-lu="pen-line"></i> Assinar no ecr&#xE3;</div>
+      <p class="intro" style="margin:0 0 12px;">Cada pessoa assina com o dedo ou o rato no respetivo quadro. As assinaturas ficam guardadas e aparecem na impress&#xE3;o.</p>
+      <div class="sign-grid">
+        <div class="sign-col">
+          <label>Assinatura do colaborador</label>
+          <div class="sign-pad" id="padCol"><canvas></canvas><div class="ph">Assina aqui</div></div>
+          <div class="sign-bar"><button class="sign-clear" type="button" data-clear="col">Limpar</button><span class="sign-state" id="stCol">Por assinar</span></div>
+        </div>
+        <div class="sign-col">
+          <label>Assinatura do supervisor</label>
+          <div class="sign-pad" id="padSup"><canvas></canvas><div class="ph">Assina aqui</div></div>
+          <div class="sign-bar"><button class="sign-clear" type="button" data-clear="sup">Limpar</button><span class="sign-state" id="stSup">Por assinar</span></div>
+        </div>
+      </div>
+      <button class="btn save" id="btnSaveSign" type="button" style="width:100%;margin-top:14px;"><i data-lu="save"></i> Guardar assinaturas</button>
+    </div>
+
     <div class="actions">
       <button class="btn print" id="btnPrint" type="button"><i data-lu="printer"></i> Imprimir para assinar (PDF)</button>
     </div>
@@ -183,7 +226,7 @@ var data=blankData();  // dados do caderno atual
 var oldIds=[];         // notas antigas deste colaborador (limpar ao guardar)
 var compM={};          // matriz de competencias
 
-function blankData(){ return {fortes:'', desenvolver:'', conversas:[]}; }
+function blankData(){ return {fortes:'', desenvolver:'', conversas:[], obs:'', sigCol:'', sigSup:'', sigData:''}; }
 function showFicha(on){ document.getElementById('ficha').style.display=on?'block':'none'; document.getElementById('hintPick').style.display=on?'none':'block'; }
 
 document.getElementById('colaborador').addEventListener('change',function(){ loadFor(this.value); });
@@ -213,7 +256,8 @@ function paint(){
   document.getElementById('cData').value=today();
   document.getElementById('cTema').value='';
   document.getElementById('cNotas').value='';
-  pintaConversas(); pintaComp();
+  document.getElementById('obs').value=data.obs||'';
+  pintaConversas(); pintaComp(); pintaAssinaturas();
 }
 function pintaConversas(){
   var l=document.getElementById('convList'); l.innerHTML='';
@@ -246,9 +290,62 @@ function pintaComp(){
 }
 
 /* sincronizar campos de texto -> data */
-['fortes','desenvolver'].forEach(function(id){
+['fortes','desenvolver','obs'].forEach(function(id){
   document.getElementById(id).addEventListener('input',function(){ data[id]=this.value; });
 });
+
+/* ---- assinaturas digitais (canvas) ---- */
+var PADS={};   // { col:{cv,ctx,empty}, sup:{...} }
+function initPad(key, padId){
+  var pad=document.getElementById(padId); var cv=pad.querySelector('canvas');
+  var ctx=cv.getContext('2d');
+  var obj={pad:pad, cv:cv, ctx:ctx, empty:true, drawing:false};
+  function resize(){
+    // manter o tra\u00E7o atual ao redimensionar
+    var prev=obj.empty?null:cv.toDataURL('image/png');
+    var r=pad.getBoundingClientRect(); var dpr=window.devicePixelRatio||1;
+    cv.width=Math.max(1,Math.round(r.width*dpr)); cv.height=Math.max(1,Math.round(r.height*dpr));
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#1a1303';
+    if(prev){ var im=new Image(); im.onload=function(){ ctx.drawImage(im,0,0,r.width,r.height); }; im.src=prev; }
+  }
+  obj.resize=resize; resize();
+  function pos(e){ var r=cv.getBoundingClientRect(); var t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left, y:t.clientY-r.top}; }
+  function start(e){ e.preventDefault(); obj.drawing=true; var p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }
+  function move(e){ if(!obj.drawing)return; e.preventDefault(); var p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); if(obj.empty){ obj.empty=false; pad.classList.add('has'); setSignState(key,true); } }
+  function end(){ if(obj.drawing){ obj.drawing=false; data['sig'+(key==='col'?'Col':'Sup')]=cv.toDataURL('image/png'); } }
+  cv.addEventListener('mousedown',start); cv.addEventListener('mousemove',move); window.addEventListener('mouseup',end);
+  cv.addEventListener('touchstart',start,{passive:false}); cv.addEventListener('touchmove',move,{passive:false}); cv.addEventListener('touchend',end);
+  PADS[key]=obj; return obj;
+}
+function setSignState(key,ok){
+  var el=document.getElementById(key==='col'?'stCol':'stSup');
+  if(el){ el.textContent=ok?'Assinado':'Por assinar'; el.className='sign-state'+(ok?' ok':''); }
+}
+function clearPad(key){
+  var o=PADS[key]; if(!o)return;
+  o.ctx.clearRect(0,0,o.cv.width,o.cv.height); o.empty=true; o.pad.classList.remove('has');
+  data['sig'+(key==='col'?'Col':'Sup')]=''; setSignState(key,false);
+}
+function loadPadImage(key,dataUrl){
+  var o=PADS[key]; if(!o)return;
+  if(!dataUrl){ clearPad(key); return; }
+  var r=o.pad.getBoundingClientRect(); var im=new Image();
+  im.onload=function(){ o.ctx.clearRect(0,0,o.cv.width,o.cv.height); o.ctx.drawImage(im,0,0,r.width,r.height); o.empty=false; o.pad.classList.add('has'); setSignState(key,true); };
+  im.src=dataUrl;
+}
+function pintaAssinaturas(){
+  if(!PADS.col) initPad('col','padCol');
+  if(!PADS.sup) initPad('sup','padSup');
+  // esperar o layout (a ficha pode ter acabado de ficar visivel) antes de medir os canvas
+  requestAnimationFrame(function(){
+    PADS.col.resize(); PADS.sup.resize();
+    loadPadImage('col',data.sigCol||'');
+    loadPadImage('sup',data.sigSup||'');
+  });
+}
+document.querySelectorAll('.sign-clear').forEach(function(b){ b.addEventListener('click',function(){ clearPad(this.getAttribute('data-clear')); }); });
+window.addEventListener('resize',function(){ if(PADS.col)PADS.col.resize(); if(PADS.sup)PADS.sup.resize(); });
 
 /* guardar tudo (1 registo por colaborador: adiciona novo, apaga antigos) */
 function guardar(btn, doneLabel){
@@ -256,6 +353,8 @@ function guardar(btn, doneLabel){
   if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return Promise.resolve(false); }
   data.fortes=document.getElementById('fortes').value;
   data.desenvolver=document.getElementById('desenvolver').value;
+  data.obs=document.getElementById('obs').value;
+  if((data.sigCol||data.sigSup)&&!data.sigData) data.sigData=today();
   var old=btn?btn.textContent:''; if(btn){ btn.disabled=true; btn.textContent='A guardar\u2026'; } setStatus('');
   var aLimpar=oldIds.slice();
   return fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
@@ -276,6 +375,15 @@ function guardar(btn, doneLabel){
 /* parte 1 \u2014 guardar pontos */
 document.getElementById('btnSavePontos').addEventListener('click',function(){ guardar(this,'\u2713 Guardado'); });
 
+/* parte 3 \u2014 guardar observacoes */
+document.getElementById('btnSaveObs').addEventListener('click',function(){ guardar(this,'\u2713 Guardado'); });
+
+/* parte 4 \u2014 guardar assinaturas */
+document.getElementById('btnSaveSign').addEventListener('click',function(){
+  data.sigData=today();
+  guardar(this,'\u2713 Assinaturas guardadas');
+});
+
 /* parte 2 \u2014 adicionar conversa (grava logo) */
 document.getElementById('btnConv').addEventListener('click',function(){
   var d=document.getElementById('cData').value||today();
@@ -291,24 +399,47 @@ document.getElementById('btnConv').addEventListener('click',function(){
 
 /* imprimir */
 function montarPrint(){
-  var row=compM[current]||{}; var reforcar=[];
-  for(var ti=0;ti<TOPICOS.length;ti++){ var lv=+row[ti]||0; if(lv===1||lv===2) reforcar.push(TOPICOS[ti]+' ('+NIVEIS[lv]+')'); }
+  var row=compM[current]||{};
+  // Competencias avaliadas (todos os topicos com nivel atribuido)
+  var avaliadas=[];
+  for(var ti=0;ti<TOPICOS.length;ti++){ var lv=+row[ti]||0; if(lv>=1) avaliadas.push({t:TOPICOS[ti],lv:lv}); }
+  var compHtml;
+  if(avaliadas.length){
+    compHtml='<table class="conv"><tbody>';
+    avaliadas.forEach(function(a){ compHtml+='<tr><td class="t">'+esc(a.t)+'</td><td>'+esc(NIVEIS[a.lv])+'</td></tr>'; });
+    compHtml+='</tbody></table>';
+  } else { compHtml='<p>Sem compet\u00EAncias avaliadas no Mapa.</p>'; }
+  // Pontos debatidos (fortes + a desenvolver)
+  var deb='';
+  if((data.fortes||'').trim()) deb+='<p><b>Pontos fortes:</b> '+esc(data.fortes.trim())+'</p>';
+  if((data.desenvolver||'').trim()) deb+='<p><b>A desenvolver:</b> '+esc(data.desenvolver.trim())+'</p>';
+  if(!deb) deb='<p>\u2014</p>';
+  // Pontos assinalados (registo de conversas)
   var conv='';
   (data.conversas||[]).slice().sort(function(a,b){return new Date(b.data)-new Date(a.data);}).forEach(function(c){
     conv+='<tr><td class="d">'+esc(fmtData(c.data))+'</td><td class="t">'+esc(c.tema||'')+'</td><td>'+esc(c.notas||'')+'</td></tr>';
   });
+  var assin=conv?'<table class="conv"><tbody>'+conv+'</tbody></table>':'<p>\u2014</p>';
+  // Observacoes
+  var obs=(data.obs||'').trim()?'<p>'+esc(data.obs.trim())+'</p>':'<p>\u2014</p>';
+  // Assinaturas digitais
+  var imgCol=data.sigCol?'<img src="'+data.sigCol+'" alt="">':'';
+  var imgSup=data.sigSup?'<img src="'+data.sigSup+'" alt="">':'';
   var hoje=new Date().toLocaleDateString('pt-PT');
-  var html='<h1>Caderno de Acompanhamento</h1><div class="psub">Sport Zone \u00B7 Vasco da Gama \u2014 privado da dire\u00E7\u00E3o</div>'
+  var dataAss=data.sigData?fmtData(data.sigData):hoje;
+  var html='<h1>Caderno de Compet\u00EAncias</h1><div class="psub">Sport Zone \u00B7 Vasco da Gama \u2014 privado da dire\u00E7\u00E3o</div>'
     +'<table class="who"><tbody>'
     +'<tr><td class="k">Colaborador</td><td class="v">'+esc(current||'\u2014')+'</td></tr>'
     +'<tr><td class="k">Data</td><td class="v">'+esc(hoje)+'</td></tr>'
     +'</tbody></table>'
-    +'<h2>Pontos fortes</h2><p>'+esc(data.fortes||'\u2014')+'</p>'
-    +'<h2>A desenvolver</h2><p>'+esc(data.desenvolver||'\u2014')+'</p>'
-    +'<h2>Registo de conversas</h2>'+(conv?'<table class="conv"><tbody>'+conv+'</tbody></table>':'<p>\u2014</p>')
-    +'<h2>Liga\u00E7\u00E3o ao Mapa de Compet\u00EAncias</h2><p>'+(reforcar.length?('A refor\u00E7ar: '+esc(reforcar.join('; '))):'Aut\u00F3nomo nos t\u00F3picos avaliados ou sem dados.')+'</p>'
-    +'<div class="signnote">Comprometemo-nos a trabalhar em sintonia nos pontos a desenvolver acima indicados.</div>'
-    +'<div class="signrow"><div class="sigcol">Supervisor</div><div class="sigcol">Colaborador</div></div>';
+    +'<h2>Compet\u00EAncias avaliadas</h2>'+compHtml
+    +'<h2>Pontos debatidos</h2>'+deb
+    +'<h2>Pontos assinalados</h2>'+assin
+    +'<h2>Observa\u00E7\u00F5es</h2>'+obs
+    +'<div class="signrow">'
+      +'<div class="sigcol"><div class="sigimg">'+imgCol+'</div><div class="sigline">Assinatura do colaborador</div><div class="signame">'+esc(current||'')+'</div></div>'
+      +'<div class="sigcol"><div class="sigimg">'+imgSup+'</div><div class="sigline">Assinatura do supervisor</div><div class="signame">'+esc(dataAss)+'</div></div>'
+    +'</div>';
   document.getElementById('printArea').innerHTML=html;
 }
 function imprimir(){ if(!current){ alert('Escolhe um colaborador.'); return; } montarPrint(); setTimeout(function(){ window.print(); },120); }
