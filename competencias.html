@@ -62,6 +62,25 @@
   table.mat td.cell:active{filter:brightness(.92);}
 
   .status{text-align:center;color:var(--muted);font-size:14px;padding:30px 16px;}
+
+  /* resumo global (matriz global de competencias) */
+  .resumo-wrap{margin:0 2px 12px;}
+  .resumo-btn{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--accent);background:#fff;color:var(--accent-dark);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}
+  .resumo-btn i{width:16px;height:16px;}
+  .resumo-panel{display:none;margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:14px;}
+  .resumo-panel.open{display:block;}
+  .resumo-panel h3{margin:0 0 4px;font-size:14px;color:var(--accent-ink);}
+  .resumo-panel .rsub{font-size:12px;color:var(--muted);margin:0 0 12px;}
+  .resumo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;}
+  .rcard{border:1px solid var(--line);border-radius:10px;padding:10px 11px;background:#faf8f5;}
+  .rcard .rt{font-size:11.5px;font-weight:700;color:var(--ink);line-height:1.25;min-height:29px;}
+  .rcard .rn{display:flex;align-items:baseline;gap:5px;margin-top:6px;}
+  .rcard .rn b{font-size:22px;font-weight:800;color:var(--pos);line-height:1;}
+  .rcard .rn span{font-size:11px;color:var(--muted);}
+  .rcard .rbar{height:6px;border-radius:4px;background:var(--l0);margin-top:8px;overflow:hidden;}
+  .rcard .rbar i{display:block;height:100%;background:var(--l3);border-radius:4px;}
+  .rcard.gap{border-color:#f3c0c0;background:#fff6f6;}
+  .rcard.gap .rn b{color:var(--neg);}
 </style>
 </head>
 <body>
@@ -93,6 +112,11 @@
   </div>
 
   <div class="filtros" id="filtros"></div>
+
+  <div class="resumo-wrap">
+    <button class="resumo-btn" id="btnResumo" type="button"><i data-lu="bar-chart-3"></i> Resumo global de compet&#xEA;ncias</button>
+    <div class="resumo-panel" id="resumoPanel"></div>
+  </div>
 
   <div id="board"><div class="status">A carregar colaboradores da Super Liga&#x2026;</div></div>
 </main>
@@ -171,6 +195,7 @@ function render(){
   });
   html+='</tbody></table></div>';
   board.innerHTML=html;
+  refreshResumo();
   board.querySelectorAll('td.cell').forEach(function(c){
     c.addEventListener('click',function(){
       var nome=c.dataset.nome, ti=c.dataset.ti;
@@ -197,6 +222,39 @@ function guardar(){
       .catch(function(){ setStatus('off','Sem liga\u00E7\u00E3o \u2014 tenta de novo'); });
   },1200);
 }
+
+/* ---- Matriz Global: quantos colaboradores dominam cada competencia (verde = nivel 3) ---- */
+function refreshResumo(){
+  var panel=document.getElementById('resumoPanel');
+  if(panel&&panel.classList.contains('open')) renderResumo();
+}
+function renderResumo(){
+  var panel=document.getElementById('resumoPanel'); if(!panel)return;
+  var totalColab=0; GROUPS.forEach(function(g){ totalColab+=g.nomes.length; });
+  // conta, por topico, quantos colaboradores estao a nivel 3 (Autonomo = quadrado verde)
+  var counts=TOPICOS.map(function(_,ti){
+    var c=0; Object.keys(M).forEach(function(nome){ if((+((M[nome]||{})[ti])||0)===3) c++; }); return c;
+  });
+  var limiteGap=Math.max(1,Math.round((totalColab||1)*0.25));
+  var cards=TOPICOS.map(function(tp,ti){
+    var n=counts[ti];
+    var pct=totalColab?Math.round(n/totalColab*100):0;
+    var gap=(n<=limiteGap);
+    return '<div class="rcard'+(gap?' gap':'')+'">'
+      +'<div class="rt">'+esc(tp)+'</div>'
+      +'<div class="rn"><b>'+n+'</b><span>de '+totalColab+'</span></div>'
+      +'<div class="rbar"><i style="width:'+Math.min(100,pct)+'%"></i></div></div>';
+  }).join('');
+  panel.innerHTML='<h3>Quantos colaboradores dominam cada compet\u00EAncia</h3>'
+    +'<p class="rsub">Soma autom\u00E1tica dos quadrados verdes (n\u00EDvel <b>Aut\u00F3nomo</b>) de toda a loja \u2014 '+totalColab+' colaboradores. Ajuda a identificar lacunas e necessidades de forma\u00E7\u00E3o (a vermelho, as mais fr\u00E1geis).</p>'
+    +'<div class="resumo-grid">'+cards+'</div>';
+  if(window.lucideRepl) window.lucideRepl();
+}
+document.getElementById('btnResumo').addEventListener('click',function(){
+  var p=document.getElementById('resumoPanel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) renderResumo();
+});
 
 carregar();
 </script>
