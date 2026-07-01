@@ -35,7 +35,10 @@
   .card h2{font-size:15px;margin:0 0 12px;font-weight:800;}
   .field{margin-bottom:12px;}
   .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
-  .field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink);}
+  .field input,.field select{width:100%;max-width:100%;min-width:0;box-sizing:border-box;-webkit-appearance:none;appearance:none;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink);}
+  .field input[type=date]{display:block;height:48px;line-height:1.2;-webkit-appearance:none;appearance:none;}
+  .field input[type=date]::-webkit-date-and-time-value{text-align:left;}
+  .field input[type=date]::-webkit-calendar-picker-indicator{margin-left:auto;}
   .field input:focus{outline:none;border-color:var(--accent);}
   .row2{display:flex;gap:10px;flex-wrap:wrap;}
   .row2 .field{flex:1;min-width:140px;}
@@ -101,8 +104,6 @@
   <div class="card" id="cardForm">
     <h2 id="formTitle">Nova ata de reuni&#xE3;o</h2>
     <div class="field"><label for="data">Data</label><input type="date" id="data"></div>
-    <div class="field"><label for="participantes">Participantes</label><textarea id="participantes" placeholder="Quem esteve presente&#x2026;"></textarea></div>
-    <div class="field"><label for="topicos">T&#xF3;picos debatidos</label><textarea id="topicos" placeholder="Assuntos discutidos&#x2026;"></textarea></div>
     <div class="field"><label for="decisoes">Decis&#xF5;es tomadas</label><textarea id="decisoes" placeholder="O que ficou decidido&#x2026;"></textarea></div>
     <div class="field"><label for="responsaveis">Respons&#xE1;veis</label><input type="text" id="responsaveis" placeholder="Quem fica respons&#xE1;vel"></div>
     <div class="field"><label for="prazos">Prazos</label><input type="text" id="prazos" placeholder="Datas-limite"></div>
@@ -132,7 +133,7 @@ function render(){
     .sort(function(a,b){ return new Date(b.ts)-new Date(a.ts); })
     .forEach(function(o){
       var d=o.d||{};
-      var corpo=linha('Participantes',d.participantes)+linha('T\u00F3picos debatidos',d.topicos)+linha('Decis\u00F5es',d.decisoes)+linha('Respons\u00E1veis',d.responsaveis)+linha('Prazos',d.prazos)+linha('Observa\u00E7\u00F5es',d.obs);
+      var corpo=linha('Decis\u00F5es',d.decisoes)+linha('Respons\u00E1veis',d.responsaveis)+linha('Prazos',d.prazos)+linha('Observa\u00E7\u00F5es',d.obs);
       var row=document.createElement('div'); row.className='aviso';
       row.innerHTML='<div class="info"><div class="av-t">Reuni\u00E3o \u2014 '+esc(fmtData(d.data||o.ts))+'</div><div class="av-d">'+(corpo||'\u2014')+'</div></div><button class="del"><i data-lu="x" data-sz="14"></i></button>';
       row.querySelector('.del').onclick=function(){ apagar(o.id); };
@@ -148,14 +149,14 @@ function carregar(){
 }
 var _d=document.getElementById('data'); if(_d) _d.value=today();
 document.getElementById('btnSave').addEventListener('click',function(){
-  var p={ data:document.getElementById('data').value||today(), participantes:document.getElementById('participantes').value.trim(), topicos:document.getElementById('topicos').value.trim(), decisoes:document.getElementById('decisoes').value.trim(), responsaveis:document.getElementById('responsaveis').value.trim(), prazos:document.getElementById('prazos').value.trim(), obs:document.getElementById('obs').value.trim() };
-  if(!p.participantes && !p.topicos && !p.decisoes){ alert('Preenche pelo menos os participantes, t\u00F3picos ou decis\u00F5es.'); return; }
+  var p={ data:document.getElementById('data').value||today(), decisoes:document.getElementById('decisoes').value.trim(), responsaveis:document.getElementById('responsaveis').value.trim(), prazos:document.getElementById('prazos').value.trim(), obs:document.getElementById('obs').value.trim() };
+  if(!p.decisoes && !p.responsaveis && !p.obs){ alert('Preenche pelo menos as decis\u00F5es tomadas.'); return; }
   if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return; }
   const btn=this; btn.disabled=true; btn.textContent='A guardar\u2026';
   fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify({action:'nota_add', seccao:SEC, autor:'Reuni\u00E3o '+p.data, texto:JSON.stringify(p)})})
     .then(r=>r.json()).then(function(j){
-      if(j&&j.ok){ ['participantes','topicos','decisoes','responsaveis','prazos','obs'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('data').value=today(); carregar(); }
+      if(j&&j.ok){ ['decisoes','responsaveis','prazos','obs'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('data').value=today(); carregar(); }
       else throw new Error('erro');
     }).catch(function(){ alert('N\u00E3o foi poss\u00EDvel guardar. Tenta de novo.'); })
     .then(function(){ btn.disabled=false; btn.textContent='Guardar ata'; });
