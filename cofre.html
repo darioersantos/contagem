@@ -59,12 +59,11 @@
   }
   .icon-btn:active{transform:scale(.96);}
   .icon-btn.danger{background:rgba(120,20,0,.28);}
-  .h-date{margin-top:10px;display:flex;align-items:center;gap:8px;font-size:13px;color:#fff2e6;flex-wrap:wrap;}
-  .h-date input{
-    background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);color:#fff;
-    border-radius:9px;padding:6px 10px;font-size:13px;font-family:inherit;
-  }
-  .saved{margin-left:auto;font-size:11px;color:#fff;display:flex;align-items:center;gap:5px;opacity:.95;white-space:nowrap;}
+  .clearbar{display:flex;gap:8px;max-width:904px;margin:0 auto;padding:0 12px 8px;}
+  .clearbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:1.5px solid #f0d3cd;background:var(--card);color:#dc2626;border-radius:11px;padding:9px 8px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:var(--shadow);}
+  .clearbtn:active{transform:scale(.97);}
+  .clearbtn i{width:15px;height:15px;}
+  .saved{font-size:11px;color:#fff;display:flex;align-items:center;gap:5px;opacity:.95;white-space:nowrap;}
   .saved .dot{width:7px;height:7px;border-radius:50%;background:#7CFC9A;flex:none;}
   .saved.sync .dot{background:#FFE08A;}
   .saved.off .dot{background:#ffb3a1;}
@@ -223,14 +222,9 @@
       </div>
     </div>
     <div class="h-actions">
+      <span class="saved" id="saveStatus"><span class="dot"></span><span class="saved-txt">Guardado</span></span>
       <a class="icon-btn" href="index.html" title="Menu principal" aria-label="Menu principal"><i data-lu="home"></i></a>
-      <button class="icon-btn danger" id="btnClear"><i data-lu="trash-2"></i></button>
     </div>
-  </div>
-  <div class="h-date">
-    <label for="dataInput"><i data-lu="calendar-days"></i> Data:</label>
-    <input type="date" id="dataInput">
-    <span class="saved" id="saveStatus"><span class="dot"></span><span class="saved-txt">Guardado</span></span>
   </div>
 </header>
 
@@ -238,6 +232,11 @@
   <button id="tabBtn-contagem" class="active" onclick="showTab('contagem')"><i data-lu="coins"></i> Contagem</button>
   <button id="tabBtn-caixas" onclick="showTab('caixas')"><i data-lu="receipt"></i> Caixas</button>
 </nav>
+
+<div class="clearbar">
+  <button type="button" class="clearbtn" id="btnClearCofre"><i data-lu="trash-2"></i> Limpar cofre</button>
+  <button type="button" class="clearbtn" id="btnClearCaixas"><i data-lu="trash-2"></i> Limpar caixas</button>
+</div>
 
 <main>
   <div class="print-head" id="printHead"></div>
@@ -345,31 +344,22 @@ function freshCofre(){ return {notas:{}, mangas:{}, saquetas:{}, moedas:{}, meta
 function freshCaixas(){ return Array.from({length:N_CAIXAS},(_,i)=>({nome:'Caixa '+(i+1), retiradas:[''], audit:''})); }
 function defaultState(){
   return {
-    data: today(),
     periodo: 'manha',
     cofreManha: freshCofre(),
     cofreNoite: freshCofre(),
     banco:{notas:{}, moedas:{}},
-    caixasByDate: {}   // { 'YYYY-MM-DD': [ ...6 caixas... ] } \u2014 cada dia guarda a sua contagem
+    caixas: freshCaixas()   // uma unica contagem persistente (so se apaga com o botao Limpar caixas)
   };
 }
 /* state.cofre = ponteiro vivo para a contagem do periodo ativo */
 function linkCofre(){ state.cofre = (state.periodo==='noite') ? state.cofreNoite : state.cofreManha; }
-/* state.caixas = ponteiro vivo para as caixas do DIA selecionado (state.data).
-   Assim, contar hoje aparece s\u00F3 na data de hoje; mudar a data mostra a contagem desse dia. */
-function linkCaixas(){
-  if(!state.caixasByDate || typeof state.caixasByDate!=='object' || Array.isArray(state.caixasByDate)) state.caixasByDate={};
-  var d=state.data||today();
-  if(!Array.isArray(state.caixasByDate[d])) state.caixasByDate[d]=freshCaixas();
-  state.caixas=state.caixasByDate[d];
-}
 function loadLocal(){
   var st=defaultState();
   try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)); if(s){ st=Object.assign(defaultState(),s); } }catch(e){}
   return st;
 }
 /* nao gravar o ponteiro 'cofre' (e duplicado de cofreManha/cofreNoite) */
-function serialize(){ var c=Object.assign({},state); delete c.cofre; delete c.caixas; return JSON.stringify(c); }
+function serialize(){ var c=Object.assign({},state); delete c.cofre; return JSON.stringify(c); }
 function saveLocal(){ try{ localStorage.setItem(STORE_KEY,serialize()); }catch(e){} }
 
 /* ---------- Sincroniza\u00E7\u00E3o (nuvem) ---------- */
@@ -581,14 +571,6 @@ function showTab(name){
   document.getElementById('tabBtn-'+name).classList.add('active');
   window.scrollTo(0,0);
 }
-const dataInput=document.getElementById('dataInput');
-dataInput.addEventListener('change',()=>{
-  state.data=dataInput.value||today();
-  linkCaixas();          // aponta para as caixas dessa data (vazias se for um dia novo)
-  renderCaixas(); calcCaixas();
-  save();
-});
-
 function setPeriodo(p){
   state.periodo=(p==='noite')?'noite':'manha';
   linkCofre();
@@ -599,10 +581,9 @@ function setPeriodo(p){
 document.querySelectorAll('#periodoSeg button').forEach(b=>b.addEventListener('click',()=>setPeriodo(b.dataset.p)));
 
 document.getElementById('btnPrint').addEventListener('click',()=>{
-  const d=new Date(state.data+'T00:00:00');
   const periodoTxt=(state.periodo==='noite')?'Contagem da Noite \uD83C\uDF19':'Contagem da Manh\u00E3 \uD83C\uDF05';
   document.getElementById('printHead').innerHTML=
-    `<h1>Contagem de Cofre \u2014 Sport Zone Vasco da Gama</h1><p class="pperiodo">${periodoTxt}</p><p>Data: ${isNaN(d)?state.data:d.toLocaleDateString('pt-PT')}</p>`;
+    `<h1>Contagem de Cofre \u2014 Sport Zone Vasco da Gama</h1><p class="pperiodo">${periodoTxt}</p>`;
   const cofre=document.getElementById('card-cofre');
   const wasOpen=cofre.open; cofre.open=true;
   // Para caber numa folha: esconder contagens a zero na impressao
@@ -619,13 +600,23 @@ document.getElementById('btnPrint').addEventListener('click',()=>{
   setTimeout(()=>{ window.print(); setTimeout(()=>{ hidden.forEach(e=>e.classList.remove('phide')); if(!wasOpen) cofre.open=false; },500); },120);
 });
 
-document.getElementById('btnClear').addEventListener('click',()=>{
-  if(confirm('Limpar a contagem do cofre e do banco e come\u00E7ar de novo?\n(As retiradas das caixas mant\u00EAm-se sempre registadas.)')){
-    var caixasGuardadas=state.caixasByDate;   // manter todo o historico de caixas por data
-    state=defaultState(); state.data=today();
-    if(caixasGuardadas && typeof caixasGuardadas==='object' && !Array.isArray(caixasGuardadas)) state.caixasByDate=caixasGuardadas;
-    linkCaixas();
-    saveLocal(); initAll(); save();
+/* Limpar S\u00D3 o cofre (manh\u00E3+noite) e o banco. As caixas n\u00E3o s\u00E3o afetadas. */
+document.getElementById('btnClearCofre').addEventListener('click',()=>{
+  if(confirm('Limpar a contagem do COFRE e do banco?\n(As caixas n\u00E3o s\u00E3o afetadas.)')){
+    state.cofreManha=freshCofre();
+    state.cofreNoite=freshCofre();
+    state.banco={notas:{}, moedas:{}};
+    state.periodo='manha';
+    linkCofre();
+    document.querySelectorAll('#periodoSeg button').forEach(b=>b.classList.toggle('active', b.dataset.p==='manha'));
+    renderCofre(); renderBanco(); save();
+  }
+});
+/* Limpar S\u00D3 as caixas. O cofre n\u00E3o \u00E9 afetado. */
+document.getElementById('btnClearCaixas').addEventListener('click',()=>{
+  if(confirm('Limpar a contagem das CAIXAS?\n(O cofre n\u00E3o \u00E9 afetado.)')){
+    state.caixas=freshCaixas();
+    renderCaixas(); calcCaixas(); save();
   }
 });
 
@@ -636,26 +627,21 @@ function migrate(){
   if(!state.cofreManha) state.cofreManha=freshCofre();
   if(!state.cofreNoite) state.cofreNoite=freshCofre();
   if(state.periodo!=='manha' && state.periodo!=='noite') state.periodo='manha';
-  // CAIXAS POR DATA (retrocompat): o formato antigo tinha uma unica lista 'state.caixas'
-  // partilhada por todos os dias. Passa a ser guardada em caixasByDate[dia], atribuida a data guardada.
-  if(!state.caixasByDate || typeof state.caixasByDate!=='object' || Array.isArray(state.caixasByDate)) state.caixasByDate={};
-  if(Array.isArray(state.caixas) && !Object.keys(state.caixasByDate).length){
-    state.caixasByDate[state.data||today()]=state.caixas;   // nao perder a contagem existente
+  // CAIXAS: uma unica lista persistente. Nada e apagado automaticamente (so pelo botao "Limpar caixas").
+  // Retrocompat: se vier do formato por-data (caixasByDate), recupera a lista mais recente.
+  if(!Array.isArray(state.caixas)){
+    if(state.caixasByDate && typeof state.caixasByDate==='object' && !Array.isArray(state.caixasByDate)){
+      var ks=Object.keys(state.caixasByDate).sort();
+      var ult=ks.length?state.caixasByDate[ks[ks.length-1]]:null;
+      state.caixas=Array.isArray(ult)?ult:freshCaixas();
+    } else {
+      state.caixas=freshCaixas();
+    }
   }
-  delete state.caixas; // e so um ponteiro; reconstruido por linkCaixas()
-  // NOVO DIA: novo dia real -> o cofre (manha+noite) e o banco recomecam a zero.
-  // As caixas de cada dia ficam guardadas em caixasByDate (nunca sao apagadas; historico protegido).
-  var hoje=today();
-  if(state.data!==hoje){
-    state.cofreManha=freshCofre();
-    state.cofreNoite=freshCofre();
-    state.banco={notas:{}, moedas:{}};
-    state.periodo='manha';
-    state.data=hoje;   // as caixas dos dias anteriores permanecem em caixasByDate
-  }
+  delete state.caixasByDate;
+  delete state.data;   // datas removidas (o cofre so se limpa manualmente)
   delete state.cofre;
   linkCofre();
-  linkCaixas();   // aponta state.caixas para a contagem do dia selecionado (cria vazia se nao existir)
   if(Array.isArray(state.caixas)) state.caixas.forEach(cx=>{
     if(Array.isArray(cx.retiradas)){
       while(cx.retiradas.length>1 && !String(cx.retiradas[cx.retiradas.length-1]||'').trim()) cx.retiradas.pop();
@@ -665,7 +651,6 @@ function migrate(){
 }
 function initAll(keepTab){
   migrate();
-  dataInput.value=state.data||today();
   document.querySelectorAll('#periodoSeg button').forEach(b=>b.classList.toggle('active', b.dataset.p===(state.periodo||'manha')));
   renderCofre(); renderBanco(); renderCaixas();
 }
