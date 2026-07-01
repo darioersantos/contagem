@@ -342,6 +342,7 @@ const BACKEND = (typeof window!=='undefined' && window.BACKEND_URL ? String(wind
 let state = loadLocal();
 
 function freshCofre(){ return {notas:{}, mangas:{}, saquetas:{}, moedas:{}, meta:2500, assinatura:'', sigStamp:''}; }
+function freshCaixas(){ return Array.from({length:N_CAIXAS},(_,i)=>({nome:'Caixa '+(i+1), retiradas:[''], audit:''})); }
 function defaultState(){
   return {
     data: today(),
@@ -349,18 +350,26 @@ function defaultState(){
     cofreManha: freshCofre(),
     cofreNoite: freshCofre(),
     banco:{notas:{}, moedas:{}},
-    caixas: Array.from({length:N_CAIXAS},(_,i)=>({nome:'Caixa '+(i+1), retiradas:[''], audit:''}))
+    caixasByDate: {}   // { 'YYYY-MM-DD': [ ...6 caixas... ] } \u2014 cada dia guarda a sua contagem
   };
 }
 /* state.cofre = ponteiro vivo para a contagem do periodo ativo */
 function linkCofre(){ state.cofre = (state.periodo==='noite') ? state.cofreNoite : state.cofreManha; }
+/* state.caixas = ponteiro vivo para as caixas do DIA selecionado (state.data).
+   Assim, contar hoje aparece s\u00F3 na data de hoje; mudar a data mostra a contagem desse dia. */
+function linkCaixas(){
+  if(!state.caixasByDate || typeof state.caixasByDate!=='object' || Array.isArray(state.caixasByDate)) state.caixasByDate={};
+  var d=state.data||today();
+  if(!Array.isArray(state.caixasByDate[d])) state.caixasByDate[d]=freshCaixas();
+  state.caixas=state.caixasByDate[d];
+}
 function loadLocal(){
   var st=defaultState();
   try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)); if(s){ st=Object.assign(defaultState(),s); } }catch(e){}
   return st;
 }
 /* nao gravar o ponteiro 'cofre' (e duplicado de cofreManha/cofreNoite) */
-function serialize(){ var c=Object.assign({},state); delete c.cofre; return JSON.stringify(c); }
+function serialize(){ var c=Object.assign({},state); delete c.cofre; delete c.caixas; return JSON.stringify(c); }
 function saveLocal(){ try{ localStorage.setItem(STORE_KEY,serialize()); }catch(e){} }
 
 /* ---------- Sincroniza\u00E7\u00E3o (nuvem) ---------- */
@@ -407,7 +416,9 @@ function setStatus(kind,txt){
 
 /* ---------- Helpers ---------- */
 function euro(n){ return (Number(n)||0).toLocaleString('pt-PT',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}); }
-function today(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+/* O "dia" s\u00F3 muda a partir da 01:00 \u2014 a contagem \u00E9 feita at\u00E9 \u00E0 meia-noite e meia,
+   por isso entre 00:00 e 00:59 continua a contar para o dia anterior. */
+function today(){ var d=new Date(); if(d.getHours()<1){ d=new Date(d.getTime()-3600*1000); } return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
 function num(v){ const n=parseFloat(String(v).replace(',','.')); return isNaN(n)?0:n; }
 function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
 function set(id,txt){ const e=document.getElementById(id); if(e) e.textContent=txt; }
@@ -571,7 +582,12 @@ function showTab(name){
   window.scrollTo(0,0);
 }
 const dataInput=document.getElementById('dataInput');
-dataInput.addEventListener('change',()=>{state.data=dataInput.value;save();});
+dataInput.addEventListener('change',()=>{
+  state.data=dataInput.value||today();
+  linkCaixas();          // aponta para as caixas dessa data (vazias se for um dia novo)
+  renderCaixas(); calcCaixas();
+  save();
+});
 
 function setPeriodo(p){
   state.periodo=(p==='noite')?'noite':'manha';
@@ -605,9 +621,10 @@ document.getElementById('btnPrint').addEventListener('click',()=>{
 
 document.getElementById('btnClear').addEventListener('click',()=>{
   if(confirm('Limpar a contagem do cofre e do banco e come\u00E7ar de novo?\n(As retiradas das caixas mant\u00EAm-se sempre registadas.)')){
-    var caixasGuardadas=state.caixas;
+    var caixasGuardadas=state.caixasByDate;   // manter todo o historico de caixas por data
     state=defaultState(); state.data=today();
-    if(Array.isArray(caixasGuardadas)) state.caixas=caixasGuardadas;
+    if(caixasGuardadas && typeof caixasGuardadas==='object' && !Array.isArray(caixasGuardadas)) state.caixasByDate=caixasGuardadas;
+    linkCaixas();
     saveLocal(); initAll(); save();
   }
 });
@@ -619,18 +636,26 @@ function migrate(){
   if(!state.cofreManha) state.cofreManha=freshCofre();
   if(!state.cofreNoite) state.cofreNoite=freshCofre();
   if(state.periodo!=='manha' && state.periodo!=='noite') state.periodo='manha';
+  // CAIXAS POR DATA (retrocompat): o formato antigo tinha uma unica lista 'state.caixas'
+  // partilhada por todos os dias. Passa a ser guardada em caixasByDate[dia], atribuida a data guardada.
+  if(!state.caixasByDate || typeof state.caixasByDate!=='object' || Array.isArray(state.caixasByDate)) state.caixasByDate={};
+  if(Array.isArray(state.caixas) && !Object.keys(state.caixasByDate).length){
+    state.caixasByDate[state.data||today()]=state.caixas;   // nao perder a contagem existente
+  }
+  delete state.caixas; // e so um ponteiro; reconstruido por linkCaixas()
   // NOVO DIA: novo dia real -> o cofre (manha+noite) e o banco recomecam a zero.
-  // As RETIRADAS DAS CAIXAS NUNCA sao apagadas automaticamente (historico financeiro protegido).
+  // As caixas de cada dia ficam guardadas em caixasByDate (nunca sao apagadas; historico protegido).
   var hoje=today();
   if(state.data!==hoje){
     state.cofreManha=freshCofre();
     state.cofreNoite=freshCofre();
     state.banco={notas:{}, moedas:{}};
     state.periodo='manha';
-    state.data=hoje;
+    state.data=hoje;   // as caixas dos dias anteriores permanecem em caixasByDate
   }
   delete state.cofre;
   linkCofre();
+  linkCaixas();   // aponta state.caixas para a contagem do dia selecionado (cria vazia se nao existir)
   if(Array.isArray(state.caixas)) state.caixas.forEach(cx=>{
     if(Array.isArray(cx.retiradas)){
       while(cx.retiradas.length>1 && !String(cx.retiradas[cx.retiradas.length-1]||'').trim()) cx.retiradas.pop();
