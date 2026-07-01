@@ -35,7 +35,7 @@ window.PORTAL_LINKS = {
   atendimento_caixa: "atendimento_caixa.html",
   aniversario:       "aniversario.html",
   limitacoes_horario:"limitacoes.html",
-  satisfacao_staff:  "",
+  satisfacao_staff:  "satisfacao.html",
   ferias:            "ferias.html",
 
   /* ---- Plano Formativo (em breve) ---- */
