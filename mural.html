@@ -92,6 +92,32 @@
   .modal-head h2{margin:0;font-size:18px;font-weight:800;color:var(--accent-dark);}
   .modal-x{background:#f4efe9;border:none;color:var(--muted);border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;}
   .modal-x i{width:18px;height:18px;}
+  /* descri&#xE7;&#xE3;o maior + barra de media (foto/&#xE1;udio) */
+  .modal-card textarea.bigdesc{min-height:150px;}
+  .mediabar{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .iconbtn{border:1.5px solid var(--line);background:#fff;color:var(--accent-dark);border-radius:11px;padding:9px 13px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;}
+  .iconbtn:active{transform:scale(.96);}
+  .iconbtn i{width:18px;height:18px;}
+  .iconbtn .micsvg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .iconbtn span{font-variant-numeric:tabular-nums;}
+  .iconbtn.rec{background:var(--neg);border-color:var(--neg);color:#fff;animation:micpulse 1s infinite;}
+  @keyframes micpulse{0%,100%{opacity:1}50%{opacity:.55}}
+  .mediaprev{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .mediaprev .mp{display:flex;align-items:center;gap:10px;background:#faf7f2;border:1px solid var(--line);border-radius:10px;padding:8px 10px;}
+  .mediaprev .mp img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line);flex:none;}
+  .mediaprev .mp audio{flex:1;min-width:0;height:36px;}
+  .mediaprev .mp span{flex:1;font-size:13px;color:var(--muted);font-weight:700;}
+  .mediaprev .mprem{background:none;border:none;color:var(--neg);font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;flex:none;}
+  /* cart&#xE3;o do post-it: data do evento, foto, &#xE1;udio, a&#xE7;&#xF5;es */
+  .aviso .av-ev{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:var(--accent-ink);background:var(--accent-soft);border-radius:999px;padding:3px 10px;margin-top:7px;}
+  .aviso .av-foto{margin-top:8px;}
+  .aviso .av-foto img{max-width:160px;max-height:130px;border-radius:10px;border:1px solid var(--line);cursor:pointer;display:block;}
+  .aviso audio{margin-top:8px;width:100%;max-width:340px;height:34px;display:block;}
+  .aviso .acts{display:flex;gap:4px;flex:none;}
+  .aviso .acts button{background:none;border:none;cursor:pointer;font-family:inherit;padding:3px 5px;display:inline-flex;}
+  .aviso .acts .ed{color:var(--accent-dark);} .aviso .acts .del2{color:var(--neg);}
+  #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+  #lightbox img{max-width:100%;max-height:100%;border-radius:8px;}
 </style>
 </head>
 <body>
@@ -124,17 +150,33 @@
       <button class="modal-x" id="btnCloseModal" aria-label="Fechar"><i data-lu="x"></i></button>
     </div>
     <div class="field"><label for="titulo">T&#xED;tulo</label><input type="text" id="titulo" placeholder="Ex: Visita da manuten&#xE7;&#xE3;o"></div>
-    <div class="field"><label for="descricao">Descri&#xE7;&#xE3;o</label><textarea id="descricao" placeholder="Detalhes do post-it, decis&#xE3;o ou incid&#xEA;ncia&#x2026;"></textarea></div>
-    <div class="field"><label for="autor">Autor</label><select id="autor" data-staff data-area="sup" data-ph="Quem regista (dire&#xE7;&#xE3;o)"></select></div>
+    <div class="field">
+      <label for="descricao">Descri&#xE7;&#xE3;o</label>
+      <textarea id="descricao" class="bigdesc" placeholder="Detalhes do post-it, decis&#xE3;o ou incid&#xEA;ncia&#x2026;"></textarea>
+      <div class="mediabar">
+        <button type="button" class="iconbtn" id="btnMic" title="Gravar &#xE1;udio" aria-label="Gravar &#xE1;udio"><svg class="micsvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg><span id="micTime">&#xC1;udio</span></button>
+        <button type="button" class="iconbtn" id="btnCamara" title="Tirar foto" aria-label="C&#xE2;mara"><i data-lu="camera"></i></button>
+        <button type="button" class="iconbtn" id="btnGaleria" title="Galeria" aria-label="Galeria"><i data-lu="image"></i></button>
+      </div>
+      <input type="file" id="fileCamara" accept="image/*" capture="environment" style="display:none">
+      <input type="file" id="fileGaleria" accept="image/*" style="display:none">
+      <div id="mediaPrev" class="mediaprev"></div>
+    </div>
+    <div class="field"><label for="evento">Data do evento (opcional)</label><input type="date" id="evento"></div>
+    <div class="field"><label for="autor">Autor</label><select id="autor" data-staff data-area="sup" data-ph="Quem regista"></select></div>
     <button class="save" id="btnSave">Publicar post-it</button>
   </div>
 </div>
+
+<div id="lightbox" onclick="this.style.display='none'"><img id="lbImg" alt="foto"></div>
 
 <script>
 "use strict";
 const BACKEND=(typeof window!=='undefined'&&window.BACKEND_URL?String(window.BACKEND_URL).trim():'');
 const SEC='_mural';
+const MAXLEN=48000;   // limite seguro para caber numa celula da folha (foto+audio partilham este espaco)
 let DADOS=[];
+var pendingFoto='', pendingAudio='', editId='';
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function fmtDataHora(iso){ var d=new Date(iso); if(isNaN(d)) return String(iso||''); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
 function fmtData(s){ var d=new Date((s||'')+'T00:00:00'); if(isNaN(d)){ d=new Date(s); } return isNaN(d)?String(s||''):d.toLocaleDateString('pt-PT'); }
@@ -142,15 +184,28 @@ function today(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth(
 function render(){
   const l=document.getElementById('lista'); l.innerHTML='';
   if(!DADOS.length){ l.innerHTML='<div class="status">Ainda n\u00E3o h\u00E1 post-its.</div>'; return; }
-  DADOS.map(function(n){ var d={}; try{d=JSON.parse(n.texto||'{}');}catch(e){} return {id:n.id, autor:n.autor, t:d.titulo||'', desc:d.descricao||'', ts:d.data||n.data}; })
+  DADOS.map(function(n){ var d={}; try{d=JSON.parse(n.texto||'{}');}catch(e){} return {id:n.id, autor:n.autor, d:d, ts:d.data||n.data}; })
     .sort(function(a,b){ return new Date(b.ts)-new Date(a.ts); })
     .forEach(function(o){
+      var d=o.d||{};
       var row=document.createElement('div'); row.className='aviso';
-      row.innerHTML='<div class="info"><div class="av-t">'+esc(o.t||'(sem t\u00EDtulo)')+'</div>'+(o.desc?'<div class="av-d">'+esc(o.desc)+'</div>':'')+'<div class="av-m">'+esc(fmtDataHora(o.ts))+(o.autor?' \u00B7 '+esc(o.autor):'')+'</div></div><button class="del"><i data-lu="x" data-sz="14"></i></button>';
-      row.querySelector('.del').onclick=function(){ apagar(o.id); };
+      var h='<div class="info"><div class="av-t">'+esc(d.titulo||'(sem t\u00EDtulo)')+'</div>';
+      if(d.descricao) h+='<div class="av-d">'+esc(d.descricao)+'</div>';
+      if(d.evento) h+='<div class="av-ev"><i data-lu="calendar-days" data-sz="13"></i> Evento: '+esc(fmtData(d.evento))+'</div>';
+      if(d.foto) h+='<div class="av-foto"><img alt="foto"></div>';
+      if(d.audio) h+='<audio controls preload="none"></audio>';
+      h+='<div class="av-m">'+esc(fmtDataHora(o.ts))+(o.autor?' \u00B7 '+esc(o.autor):'')+'</div></div>';
+      h+='<div class="acts"><button class="ed" title="Editar"><i data-lu="pen-line" data-sz="15"></i></button><button class="del2" title="Apagar"><i data-lu="trash-2" data-sz="15"></i></button></div>';
+      row.innerHTML=h;
+      if(d.foto){ var im=row.querySelector('.av-foto img'); im.src=d.foto; im.onclick=function(){ abrirFoto(d.foto); }; }
+      if(d.audio){ var au=row.querySelector('audio'); au.src=d.audio; }
+      row.querySelector('.del2').onclick=function(){ apagar(o.id); };
+      row.querySelector('.ed').onclick=function(){ editar(o); };
       l.appendChild(row);
     });
+  if(window.lucideRepl) window.lucideRepl();
 }
+function abrirFoto(src){ document.getElementById('lbImg').src=src; document.getElementById('lightbox').style.display='flex'; }
 function carregar(){
   if(!BACKEND){ document.getElementById('lista').innerHTML='<div class="status">Sem liga\u00E7\u00E3o \u00E0 nuvem.</div>'; return; }
   fetch(BACKEND+'?action=notas&t='+Date.now()).then(r=>r.json()).then(function(j){
@@ -158,20 +213,83 @@ function carregar(){
     else{ document.getElementById('lista').innerHTML='<div class="status">A nuvem ainda n\u00E3o est\u00E1 ativa.</div>'; }
   }).catch(function(){ document.getElementById('lista').innerHTML='<div class="status">Sem liga\u00E7\u00E3o. Recarrega.</div>'; });
 }
+
+/* ---- pr\u00E9-visualiza\u00E7\u00E3o de media (foto + \u00E1udio) ---- */
+function mostrarPrev(){
+  var p=document.getElementById('mediaPrev'); p.innerHTML='';
+  if(pendingFoto){ var d=document.createElement('div'); d.className='mp'; d.innerHTML='<img src="'+pendingFoto+'"><button type="button" class="mprem" data-k="foto">Remover</button>'; p.appendChild(d); }
+  if(pendingAudio){ var d2=document.createElement('div'); d2.className='mp'; d2.innerHTML='<audio controls src="'+pendingAudio+'"></audio><button type="button" class="mprem" data-k="audio">Remover</button>'; p.appendChild(d2); }
+  p.querySelectorAll('.mprem').forEach(function(b){ b.onclick=function(){ if(b.getAttribute('data-k')==='foto')pendingFoto=''; else pendingAudio=''; mostrarPrev(); }; });
+}
+/* ---- Fotos (c\u00E2mara ou galeria), comprimidas para caber ---- */
+function comprimir(file, cb){
+  const img=new Image();
+  img.onload=function(){
+    const w=img.width, h=img.height;
+    function gen(dim,q){ const s=Math.min(1,dim/Math.max(w,h)); const cw=Math.round(w*s),ch=Math.round(h*s); const c=document.createElement('canvas'); c.width=cw;c.height=ch; c.getContext('2d').drawImage(img,0,0,cw,ch); return c.toDataURL('image/jpeg',q); }
+    let dim=800, q=0.55, data=gen(dim,q);
+    while(data.length>28000 && (dim>300||q>0.32)){ if(q>0.36){ q-=0.1; } else { dim=Math.round(dim*0.85); q=0.5; } data=gen(dim,q); }
+    cb(data);
+  };
+  img.onerror=function(){ alert('N\u00E3o foi poss\u00EDvel ler a imagem.'); };
+  img.src=URL.createObjectURL(file);
+}
+function onFoto(e){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return; comprimir(f, function(data){ pendingFoto=data; mostrarPrev(); }); }
+document.getElementById('btnCamara').addEventListener('click',function(){ document.getElementById('fileCamara').click(); });
+document.getElementById('btnGaleria').addEventListener('click',function(){ document.getElementById('fileGaleria').click(); });
+document.getElementById('fileCamara').addEventListener('change',onFoto);
+document.getElementById('fileGaleria').addEventListener('change',onFoto);
+
+/* ---- Gravar \u00C1UDIO (n\u00E3o \u00E9 ditado) ---- */
+(function(){
+  var btn=document.getElementById('btnMic'), lbl=document.getElementById('micTime');
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)){ if(btn) btn.style.display='none'; return; }
+  var rec=null, chunks=[], stream=null, timer=null, secs=0;
+  function paraTracks(){ try{ if(stream) stream.getTracks().forEach(function(t){t.stop();}); }catch(e){} stream=null; }
+  function stop(){ if(rec&&rec.state==='recording'){ try{ rec.stop(); }catch(e){} } }
+  btn.addEventListener('click',function(){
+    if(rec&&rec.state==='recording'){ stop(); return; }
+    navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
+      stream=s; chunks=[];
+      var opts={};
+      try{ if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')){ opts={mimeType:'audio/webm;codecs=opus',audioBitsPerSecond:12000}; } }catch(e){}
+      try{ rec=new MediaRecorder(s,opts); }catch(e){ rec=new MediaRecorder(s); }
+      rec.ondataavailable=function(ev){ if(ev.data&&ev.data.size) chunks.push(ev.data); };
+      rec.onstop=function(){
+        clearInterval(timer); btn.classList.remove('rec'); lbl.textContent='\u00C1udio'; paraTracks();
+        var blob=new Blob(chunks,{type:(rec.mimeType||'audio/webm')});
+        var fr=new FileReader();
+        fr.onload=function(){ var d=String(fr.result||''); if(d.length>34000){ alert('O \u00E1udio ficou grande demais. Grava um clip mais curto (at\u00E9 ~15s).'); }else{ pendingAudio=d; } mostrarPrev(); };
+        fr.readAsDataURL(blob);
+      };
+      rec.start(); secs=0; btn.classList.add('rec'); lbl.textContent='0s \u25CF parar';
+      timer=setInterval(function(){ secs++; lbl.textContent=secs+'s \u25CF parar'; if(secs>=20) stop(); },1000);
+    }).catch(function(){ alert('N\u00E3o foi poss\u00EDvel aceder ao microfone. Autoriza o acesso no telem\u00F3vel/computador.'); });
+  });
+})();
+
+/* ---- guardar / editar / apagar ---- */
 document.getElementById('btnSave').addEventListener('click',function(){
   const titulo=document.getElementById('titulo').value.trim();
   const descricao=document.getElementById('descricao').value.trim();
+  const evento=document.getElementById('evento').value||'';
   const autor=document.getElementById('autor').value.trim();
-  if(!titulo && !descricao){ alert('Escreve o t\u00EDtulo ou a descri\u00E7\u00E3o do post-it.'); return; }
+  if(!titulo && !descricao && !pendingFoto && !pendingAudio){ alert('Escreve algo, ou anexa uma foto/\u00E1udio.'); return; }
   if(!BACKEND){ alert('Sem liga\u00E7\u00E3o \u00E0 nuvem.'); return; }
-  const btn=this; btn.disabled=true; btn.textContent='A publicar\u2026';
+  var payload={ titulo:titulo, descricao:descricao, data:new Date().toISOString(), evento:evento, foto:pendingFoto||'', audio:pendingAudio||'' };
+  var texto=JSON.stringify(payload);
+  if(texto.length>MAXLEN){ alert('O post-it ficou grande demais (foto/\u00E1udio). Remove a foto ou grava um \u00E1udio mais curto.'); return; }
+  const btn=this; btn.disabled=true; var lbl=btn.textContent; btn.textContent='A guardar\u2026';
+  var oldId=editId;
   fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'nota_add', seccao:SEC, autor:autor, texto:JSON.stringify({titulo:titulo,descricao:descricao,data:new Date().toISOString()})})})
+    body:JSON.stringify({action:'nota_add', seccao:SEC, autor:autor, texto:texto})})
     .then(r=>r.json()).then(function(j){
-      if(j&&j.ok){ document.getElementById('titulo').value=''; document.getElementById('descricao').value=''; var a=document.getElementById('autor'); if(a) a.value=''; carregar(); closeModal(); }
-      else throw new Error('erro');
-    }).catch(function(){ alert('N\u00E3o foi poss\u00EDvel publicar. Tenta de novo.'); })
-    .then(function(){ btn.disabled=false; btn.textContent='Publicar post-it'; });
+      if(!(j&&j.ok)) throw new Error('erro');
+      if(oldId){ return fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'nota_del', id:oldId})}).catch(function(){}); }
+    })
+    .then(function(){ resetForm(); carregar(); closeModal(); })
+    .catch(function(){ alert('N\u00E3o foi poss\u00EDvel guardar. Tenta de novo.'); })
+    .then(function(){ btn.disabled=false; btn.textContent=lbl; });
 });
 function apagar(id){
   if(!confirm('Apagar este post-it?')) return;
@@ -179,9 +297,33 @@ function apagar(id){
     .then(r=>r.json()).then(function(){ DADOS=DADOS.filter(x=>String(x.id)!==String(id)); render(); })
     .catch(function(){ alert('N\u00E3o foi poss\u00EDvel apagar.'); });
 }
-/* popup de cria\u00E7\u00E3o */
+
+/* ---- popup (criar/editar) ---- */
 var modal=document.getElementById('modal');
-function openModal(){ modal.classList.add('open'); var t=document.getElementById('titulo'); if(t) setTimeout(function(){t.focus();},50); }
+function resetForm(){
+  document.getElementById('titulo').value=''; document.getElementById('descricao').value='';
+  document.getElementById('evento').value=''; var a=document.getElementById('autor'); if(a) a.value='';
+  pendingFoto=''; pendingAudio=''; editId=''; mostrarPrev();
+}
+function openModal(){
+  resetForm();
+  document.getElementById('formTitle').textContent='Novo post-it';
+  document.getElementById('btnSave').textContent='Publicar post-it';
+  modal.classList.add('open');
+  setTimeout(function(){ var t=document.getElementById('titulo'); if(t) t.focus(); },50);
+}
+function editar(o){
+  resetForm();
+  editId=o.id; var d=o.d||{};
+  document.getElementById('titulo').value=d.titulo||'';
+  document.getElementById('descricao').value=d.descricao||'';
+  document.getElementById('evento').value=d.evento||'';
+  pendingFoto=d.foto||''; pendingAudio=d.audio||''; mostrarPrev();
+  var a=document.getElementById('autor'); if(a&&o.autor){ a.value=o.autor; }
+  document.getElementById('formTitle').textContent='Editar post-it';
+  document.getElementById('btnSave').textContent='Guardar altera\u00E7\u00F5es';
+  modal.classList.add('open');
+}
 function closeModal(){ modal.classList.remove('open'); }
 document.getElementById('btnNew').addEventListener('click',openModal);
 document.getElementById('btnCloseModal').addEventListener('click',closeModal);
